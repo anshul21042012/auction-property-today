@@ -76,70 +76,8 @@
     </div>
   </section>
 
-  <!-- Floating Search Widget Section -->
-  <div class="home-search-container">
-    <div class="container">
-      <form class="search-bar-glass glassmorphism" id="hero-quick-search">
-        <div class="search-field">
-          <label>City</label>
-          <select id="search-city">
-            <option value="all">All Cities</option>
-            <option value="New Delhi">New Delhi</option>
-            <option value="Mumbai">Mumbai</option>
-            <option value="Bangalore">Bangalore</option>
-            <option value="Goa">Goa</option>
-            <option value="Ooty">Ooty</option>
-            <option value="Kolkata">Kolkata</option>
-          </select>
-        </div>
-        <div class="search-field">
-          <label>Property Type</label>
-          <select id="search-type">
-            <option value="all">Any Type</option>
-            <option value="Villa">Luxury Villa</option>
-            <option value="Penthouse">Sea Penthouse</option>
-            <option value="Bungalow">Lutyens' Bungalow</option>
-            <option value="Heritage Estate">Heritage Manor</option>
-          </select>
-        </div>
-        <div class="search-field">
-          <label>Bedrooms</label>
-          <select id="search-bhk">
-            <option value="all">Any Bedrooms</option>
-            <option value="4">4 BHK</option>
-            <option value="5">5 BHK</option>
-            <option value="6">6 BHK</option>
-            <option value="8">8 BHK</option>
-          </select>
-        </div>
-        <div class="flex-center" style="margin-top:auto;">
-          <button type="submit" class="btn-luxury" style="padding: 0.85rem 2rem; width:100%; border-radius:4px; font-weight:600;">FIND AUCTIONS</button>
-        </div>
-      </form>
-    </div>
-  </div>
 
-  <!-- Featured Catalog Section -->
-  <section class="section-padding" style="position:relative;">
-    <div class="container">
-      <div class="section-header">
-        <span class="apple-subtitle">Featured Properties</span>
-        <h2>Active Auctions</h2>
-        <p style="color:var(--text-secondary); max-width:550px; margin: 0 auto;">Vetted properties open for immediate bidding.</p>
-      </div>
-      
-      <!-- Dynamically Populated 3 Featured Property Grid -->
-      <div class="grid-listings-col" style="gap:3rem;">
-        <div class="listings-grid" id="home-featured-grid" style="grid-template-columns: repeat(3, 1fr);">
-          <!-- Dynamic cards injected here -->
-        </div>
-      </div>
-      
-      <div style="text-align:center; margin-top:4.5rem;">
-        <a href="listings.html" class="btn-luxury-outline">VIEW ALL PROPERTIES</a>
-      </div>
-    </div>
-  </section>
+
 
   <!-- Live Stats Section -->
   <section class="stats-section">
@@ -338,147 +276,7 @@
       });
     });
 
-    // Quick Search Form Redirection
-    const searchForm = document.getElementById('hero-quick-search');
-    if (searchForm) {
-      searchForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const city = document.getElementById('search-city').value;
-        const type = document.getElementById('search-type').value;
-        const bhk = document.getElementById('search-bhk').value;
-        
-        // Pass selections to Listings Page via Query params
-        window.location.href = `listings.html?city=${encodeURIComponent(city)}&type=${encodeURIComponent(type)}&bhk=${encodeURIComponent(bhk)}`;
-      });
-    }
 
-    // Load and Render Featured properties dynamically from Supabase
-    async function loadFeaturedProperties() {
-      const grid = document.getElementById('home-featured-grid');
-      if (!grid || !window.supabaseClient) return;
-
-      grid.innerHTML = `
-        <div style="grid-column: span 3; text-align: center; padding: 3rem 0;">
-          <div class="skeleton" style="width:40px; height:40px; border-radius:50%; display:inline-block;"></div>
-          <p style="color:var(--text-muted); font-size:0.9rem; margin-top:1rem;">Loading properties...</p>
-        </div>
-      `;
-
-      const { data, error } = await window.supabaseClient
-        .from('properties')
-        .select('*, property_images(*)')
-        .eq('is_featured', true)
-        .limit(3);
-
-      if (error || !data || data.length === 0) {
-        grid.innerHTML = `<p style="grid-column: span 3; text-align:center; color:var(--text-muted);">Failed to load properties.</p>`;
-        return;
-      }
-      
-      grid.innerHTML = '';
-      data.forEach(item => {
-        // Resolve images array from property_images join table
-        const images = item.property_images && item.property_images.length > 0
-          ? item.property_images.map(img => img.image_url)
-          : ["https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80"];
-
-        const auctionDate = item.auction_date || new Date().toISOString();
-        const rawPrice = item.price || item.reservation_price || 0;
-        const priceFormatted = `₹${(rawPrice / 10000000).toFixed(1)} Cr`;
-
-        const pName = item.title || item.property_name || 'Untitled';
-        const pClass = item.property_type || item.property_classification || item.type || 'Villa';
-        const pArea = item.area_sqft || item.built_area || item.area || 0;
-        const pBHK = item.bedrooms || item.bhk_configuration || 1;
-        const pBaths = item.bathrooms || item.bathroom_configuration || 1;
-
-        const card = document.createElement('div');
-        card.className = 'property-card';
-        const isVidC = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'm4v'].includes(images[0].split('?')[0].split('.').pop().toLowerCase());
-        card.innerHTML = `
-          <div class="card-media">
-            ${isVidC ? `
-              <video src="${images[0]}" class="card-img" style="object-fit:cover; background:#000;" muted playsinline autoplay loop></video>
-            ` : `
-              <img src="${images[0]}" alt="${pName}" class="card-img" />
-            `}
-            <span class="badge-featured">Featured</span>
-            <span class="badge-auction-date">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-              <span>${new Date(auctionDate).toLocaleDateString('en-IN', {day:'numeric', month:'short'})}</span>
-            </span>
-            <div class="card-overlay"></div>
-            <div class="card-timer-panel">
-              <span class="gold-dot"></span>
-              <span class="countdown-timer" data-date="${auctionDate}">Auction Active</span>
-            </div>
-          </div>
-          
-          <div class="card-content">
-            <span class="card-city">${item.city} • ${pClass}</span>
-            <h3 class="card-title">${pName}</h3>
-            
-            <div class="card-specs">
-              <div class="spec-item">
-                <span>📐</span>
-                <span>${pArea.toLocaleString('en-IN')} sq ft</span>
-              </div>
-              <div class="spec-item">
-                <span>🛏️</span>
-                <span>${pBHK} BHK</span>
-              </div>
-              <div class="spec-item">
-                <span>🛁</span>
-                <span>${pBaths} Baths</span>
-              </div>
-            </div>
-            
-            <div class="card-pricing">
-              <div>
-                <span class="price-label">Price</span>
-                <div class="price-value">${priceFormatted}</div>
-              </div>
-            </div>
-            
-            <div class="card-actions">
-              <button class="btn-card-quick" onclick="window.quickViewModal.show(${item.id})">Quick View</button>
-              <a href="details.html?id=${item.id}" class="btn-card-details flex-center">View Details</a>
-            </div>
-          </div>
-        `;
-        grid.appendChild(card);
-      });
-
-      startCountdowns();
-    }
-
-    // Countdown Timers logic
-    function startCountdowns() {
-      const timers = document.querySelectorAll('.countdown-timer');
-      timers.forEach(timer => {
-        const targetDate = new Date(timer.getAttribute('data-date')).getTime();
-        
-        function updateTimer() {
-          const now = new Date().getTime();
-          const distance = targetDate - now;
-          
-          if (distance < 0) {
-            timer.innerHTML = "Auction Live";
-            timer.style.color = "var(--gold-hover)";
-            return;
-          }
-          
-          const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-          const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-          const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-          
-          timer.innerHTML = `Starts in: ${days}d ${hours}h ${minutes}m`;
-        }
-        
-        updateTimer();
-        setInterval(updateTimer, 60000); // Update every minute
-      });
-    }
 
     // Contact Form Ingress Submission via Supabase
     async function submitContactQuery(event) {
@@ -567,8 +365,7 @@
       }
     }
 
-    // Trigger dynamic fetch on load
-    window.addEventListener('load', loadFeaturedProperties);
+
   </script>
 </body>
 </html>

@@ -461,6 +461,14 @@
             </div>
           </div>
 
+          <!-- Existing Media Grid (Visible in Edit mode only) -->
+          <div class="form-group" id="existing-media-container" style="display:none; margin-top:1.5rem;">
+            <label>Existing Media (Click 🗑️ to delete)</label>
+            <div id="existing-media-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:1rem; margin-top:0.75rem;">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
           <!-- Featured Auction promotion option -->
           <div class="form-group">
             <div class="form-toggle-group">
@@ -498,6 +506,20 @@
 
   <!-- Dashboard Logics & CRUD controllers -->
   <script>
+    // Secure HTML Escaping Utility for XSS Prevention
+    function escapeHTML(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>'"]/g, 
+        tag => ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          "'": '&#39;',
+          '"': '&quot;'
+        }[tag] || tag)
+      );
+    }
+
     // Premium Toast Notification System
     function showToast(message, type = 'success') {
       let toastContainer = document.getElementById('toast-container');
@@ -622,6 +644,113 @@
         textLabel.textContent = `${selectedUploadFiles.length} file(s) selected. Ready for upload.`;
         textLabel.style.color = "var(--gold-hover)";
       }
+    }
+
+    // Render existing media files for the property being edited
+    function renderExistingMedia(images, propertyId) {
+      const container = document.getElementById('existing-media-container');
+      const grid = document.getElementById('existing-media-grid');
+      if (!container || !grid) return;
+
+      if (!images || images.length === 0) {
+        container.style.display = 'none';
+        grid.innerHTML = '';
+        return;
+      }
+
+      container.style.display = 'block';
+      grid.innerHTML = '';
+
+      images.forEach(img => {
+        const isVid = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'm4v'].includes(img.image_url.split('?')[0].split('.').pop().toLowerCase());
+        const item = document.createElement('div');
+        item.style.cssText = `
+          position: relative; 
+          width: 100%; 
+          padding-top: 100%; 
+          border-radius: 6px; 
+          overflow: hidden; 
+          border: 1px solid rgba(255,255,255,0.1);
+          background: #0d0d0e;
+        `;
+        
+        const mediaEl = isVid 
+          ? `<video src="${img.image_url}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover;" muted playsinline></video>`
+          : `<img src="${img.image_url}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover;" />`;
+          
+        item.innerHTML = `
+          ${mediaEl}
+          <button type="button" class="delete-media-btn" style="
+            position: absolute; 
+            top: 6px; 
+            right: 6px; 
+            background: rgba(0,0,0,0.7); 
+            border: 1px solid rgba(255,255,255,0.15); 
+            border-radius: 4px; 
+            color: #ff4d4d; 
+            width: 24px; 
+            height: 24px; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 11px;
+            z-index: 10;
+            transition: all 0.2s;
+          " onclick="deleteExistingMedia('${img.id}', '${img.image_url}', '${propertyId}')" title="Delete media file">🗑️</button>
+        `;
+        grid.appendChild(item);
+      });
+    }
+
+    // Delete existing media file from Supabase Storage and database
+    async function deleteExistingMedia(imageId, imageUrl, propertyId) {
+      if (!window.supabaseClient) return;
+      if (!confirm("Are you sure you want to delete this media file?")) return;
+
+      console.log("[Supabase Debug] Deleting image record:", imageId);
+      const { error } = await window.supabaseClient
+        .from('property_images')
+        .delete()
+        .eq('id', imageId);
+
+      if (error) {
+        console.error("Failed to delete media record:", error);
+        showToast(`Failed to delete media: ${error.message}`, 'error');
+        return;
+      }
+
+      // Also try to delete from Storage if it's a Supabase storage URL
+      try {
+        if (imageUrl.includes('property-images')) {
+          const parts = imageUrl.split('/property-images/');
+          if (parts.length > 1) {
+            const filePath = decodeURIComponent(parts[1].split('?')[0]);
+            console.log("[Supabase Debug] Deleting storage file:", filePath);
+            await window.supabaseClient.storage
+              .from('property-images')
+              .remove([filePath]);
+          }
+        }
+      } catch (storageErr) {
+        console.error("Failed to delete storage file:", storageErr);
+      }
+
+      showToast("Media file deleted successfully.");
+      
+      // Refresh the edit form's existing media display
+      const { data: refreshed, error: refreshError } = await window.supabaseClient
+        .from('properties')
+        .select('*, property_images(*)')
+        .eq('id', propertyId);
+        
+      if (!refreshError && refreshed && refreshed.length > 0) {
+        renderExistingMedia(refreshed[0].property_images || [], propertyId);
+      }
+      
+      // Reload main table/dashboard to update roster
+      loadPropertiesRoster();
+      loadDashboardOverview();
     }
 
     // Helper: Upload multiple assets to Supabase Storage and register public URLs in property_images
@@ -767,6 +896,11 @@
         textLabel.textContent = "Click to select photos & videos for upload";
         textLabel.style.color = "var(--text-secondary)";
       }
+
+      const existingMediaContainer = document.getElementById('existing-media-container');
+      const existingMediaGrid = document.getElementById('existing-media-grid');
+      if (existingMediaContainer) existingMediaContainer.style.display = 'none';
+      if (existingMediaGrid) existingMediaGrid.innerHTML = '';
       
       if (mode === 'add') {
         title.textContent = "Add New Property";
@@ -963,7 +1097,7 @@
       console.log("[Supabase Debug] Fetching Property by ID (UUID/String):", propertyId);
       const { data, error } = await window.supabaseClient
         .from('properties')
-        .select('*')
+        .select('*, property_images(*)')
         .eq('id', propertyId);
       
       if (error || !data || data.length === 0) {
@@ -975,6 +1109,8 @@
       const item = data[0];
       console.log("[Supabase Debug] Fetched Property Data:", item);
       openPropertyFormModal('edit');
+
+      renderExistingMedia(item.property_images || [], propertyId);
 
       document.getElementById('form-property-id').value = propertyId;
       document.getElementById('form-title').value = item.title || '';
@@ -1161,11 +1297,11 @@
         const row = document.createElement('tr');
         row.innerHTML = `
           <td>
-            <div style="font-weight:600; color:var(--text-primary); font-family:var(--font-sans);">${item.name}</div>
-            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">${item.phone} <br> ${item.email}</div>
+            <div style="font-weight:600; color:var(--text-primary); font-family:var(--font-sans);">${escapeHTML(item.name)}</div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">${escapeHTML(item.phone)} <br> ${escapeHTML(item.email)}</div>
           </td>
-          <td style="font-weight:600; color:var(--text-secondary);">${item.budget}</td>
-          <td style="font-size:0.85rem; max-width:250px; line-height:1.4;">${item.message}</td>
+          <td style="font-weight:600; color:var(--text-secondary);">${escapeHTML(item.budget)}</td>
+          <td style="font-size:0.85rem; max-width:250px; line-height:1.4;">${escapeHTML(item.message)}</td>
           <td>${new Date(date).toLocaleDateString('en-IN', {day:'numeric', month:'short'})}</td>
           <td>
             <select class="inquiry-status-select status-pill ${item.status}" onchange="updateInquiryStatusState(${item.id}, this.value)">
@@ -1259,13 +1395,13 @@
             const statusClass = item.status || 'pending';
             const statusText = statusClass.charAt(0).toUpperCase() + statusClass.slice(1);
 
-            const row = document.createElement('tr');
+             const row = document.createElement('tr');
             row.innerHTML = `
               <td>
-                <div style="font-weight:600; color:var(--text-primary); font-size:0.85rem;">${item.name}</div>
-                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">${item.phone}</div>
+                <div style="font-weight:600; color:var(--text-primary); font-size:0.85rem;">${escapeHTML(item.name)}</div>
+                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">${escapeHTML(item.phone)}</div>
               </td>
-              <td style="font-weight:600; color:var(--text-secondary); font-size:0.85rem;">${item.budget}</td>
+              <td style="font-weight:600; color:var(--text-secondary); font-size:0.85rem;">${escapeHTML(item.budget)}</td>
               <td style="font-size:0.8rem; color:var(--text-muted);">${dateFormatted}</td>
               <td>
                 <span class="status-pill ${statusClass}" style="font-size:0.75rem; padding:0.2rem 0.5rem; display:inline-block;">${statusText}</span>
