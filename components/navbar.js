@@ -25,6 +25,10 @@
     const isContact = page === "contact.html";
     const isAdmin = page === "admin.html";
 
+    // Setup dynamic paths for core pillars anchors
+    const loansLink = isHome ? "#loans" : "index.html#loans";
+    const legalLink = isHome ? "#legal-vetting" : "index.html#legal-vetting";
+
     header.innerHTML = `
       <div class="container navbar-container">
         <a href="index.html" class="navbar-logo">
@@ -38,6 +42,8 @@
           <ul class="navbar-links">
             <li><a href="index.html" class="nav-link ${isHome ? 'active' : ''}">Home</a></li>
             <li><a href="listings.html" class="nav-link ${isListings ? 'active' : ''}">Properties</a></li>
+            <li><a href="${loansLink}" class="nav-link">Auction Loans</a></li>
+            <li><a href="${legalLink}" class="nav-link">Legal Vetting (XYZ)</a></li>
             <li><a href="about.html" class="nav-link ${isAbout ? 'active' : ''}">About Us</a></li>
             <li><a href="contact.html" class="nav-link ${isContact ? 'active' : ''}">Contact</a></li>
             <li><a href="admin.html" class="nav-link ${isAdmin ? 'active' : ''}">Admin Dashboard</a></li>
@@ -88,6 +94,8 @@
       <ul class="mobile-nav-links">
         <li><a href="index.html" class="nav-link ${isHome ? 'active' : ''}">Home</a></li>
         <li><a href="listings.html" class="nav-link ${isListings ? 'active' : ''}">Properties</a></li>
+        <li><a href="${loansLink}" class="nav-link">Auction Loans</a></li>
+        <li><a href="${legalLink}" class="nav-link">Legal Vetting (XYZ)</a></li>
         <li><a href="about.html" class="nav-link ${isAbout ? 'active' : ''}">About Us</a></li>
         <li><a href="contact.html" class="nav-link ${isContact ? 'active' : ''}">Contact</a></li>
         <li><a href="admin.html" class="nav-link ${isAdmin ? 'active' : ''}">Admin Dashboard</a></li>
@@ -195,6 +203,14 @@
     if (drawerTrigger) drawerTrigger.addEventListener('click', openDrawer);
     if (drawerClose) drawerClose.addEventListener('click', closeDrawer);
     if (overlay) overlay.addEventListener('click', closeDrawer);
+
+    // Auto-close drawer on link click (highly elegant for smooth anchors)
+    if (drawer) {
+      const drawerLinks = drawer.querySelectorAll('.mobile-nav-links a');
+      drawerLinks.forEach(link => {
+        link.addEventListener('click', closeDrawer);
+      });
+    }
 
     // 4. Live Properties Search Modal
     const searchTrigger = document.getElementById('nav-search-trigger');

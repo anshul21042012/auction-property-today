@@ -1073,3 +1073,325 @@
     gap: 3.5rem;
   }
 }
+
+/* CORE PILLARS & DETAILED SECTIONS */
+.pillars-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2.5rem;
+}
+
+.pillar-card {
+  padding: 4rem 2.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  transition: var(--transition-smooth);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.pillar-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--gold-gradient);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: var(--transition-smooth);
+}
+
+.pillar-card:hover {
+  transform: translateY(-8px);
+  border-color: var(--border-color-gold);
+  box-shadow: 0 15px 40px var(--gold-glow);
+  background: var(--bg-surface-elevated);
+}
+
+.pillar-card:hover::before {
+  transform: scaleX(1);
+}
+
+.pillar-icon {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  color: var(--gold-primary);
+  display: inline-block;
+  line-height: 1;
+}
+
+.pillar-card h3 {
+  font-size: 1.65rem;
+  font-family: var(--font-serif);
+  margin-bottom: 1.25rem;
+  font-weight: 500;
+}
+
+.pillar-card p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.65;
+  margin-bottom: 2.5rem;
+  flex-grow: 1;
+}
+
+.pillar-link {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gold-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: var(--transition-fast);
+}
+
+.pillar-link .arrow {
+  transition: transform 0.2s ease;
+}
+
+.pillar-link:hover {
+  color: var(--gold-hover);
+}
+
+.pillar-link:hover .arrow {
+  transform: translateX(5px);
+}
+
+/* Detailed Pillar Sections */
+.pillar-detail-section {
+  position: relative;
+  scroll-margin-top: 100px; /* offset for sticky navbar */
+}
+
+/* Banking Partners */
+.banking-partners {
+  margin-top: 2.5rem;
+}
+
+.bank-pill {
+  padding: 0.5rem 1.25rem;
+  border-radius: 30px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-color);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  transition: var(--transition-fast);
+}
+
+.bank-pill:hover {
+  border-color: var(--gold-primary);
+  color: var(--gold-primary);
+  transform: translateY(-2px);
+}
+
+/* Loan Stats Card Widget */
+.loan-stats-card {
+  border-radius: 8px;
+  padding: 3rem 2.5rem;
+  border: 1px solid var(--border-color);
+  background: var(--glass-bg);
+}
+
+.loan-stats-card .stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.loan-stats-card .stat-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--gold-primary);
+  background: rgba(212, 175, 55, 0.08);
+  border: 1px solid var(--border-color-gold);
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+}
+
+.loan-stats-card h4 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-primary);
+}
+
+.stat-rates-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.rate-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+
+.rate-box:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.rate-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+.rate-value {
+  font-size: 1.75rem;
+  font-family: var(--font-serif);
+  font-weight: 600;
+  color: var(--gold-primary);
+}
+
+/* Timeline Clearance Workflow */
+.timeline-container {
+  max-width: 900px;
+  margin: 0 auto;
+  position: relative;
+  padding-left: 3rem;
+}
+
+.timeline-container::before {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: 11px;
+  width: 1px;
+  height: calc(100% - 40px);
+  background: linear-gradient(to bottom, var(--border-color) 0%, var(--border-color-gold) 30%, var(--border-color-gold) 70%, var(--border-color) 100%);
+}
+
+.timeline-step {
+  position: relative;
+  padding-bottom: 4rem;
+}
+
+.timeline-step:last-of-type {
+  padding-bottom: 0;
+}
+
+.step-marker {
+  position: absolute;
+  left: -3rem;
+  top: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--bg-color);
+  border: 2px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-smooth);
+}
+
+.step-num {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  transition: var(--transition-smooth);
+}
+
+.step-content {
+  padding: 2.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  transition: var(--transition-smooth);
+}
+
+.step-content h4 {
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+  transition: var(--transition-smooth);
+}
+
+.step-content p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 0;
+}
+
+.timeline-step:hover .step-marker {
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 15px var(--gold-glow);
+}
+
+.timeline-step:hover .step-num {
+  color: var(--gold-primary);
+}
+
+.timeline-step:hover .step-content {
+  border-color: var(--border-color-gold);
+  background: var(--bg-surface-elevated);
+}
+
+.timeline-step:hover .step-content h4 {
+  color: var(--gold-primary);
+}
+
+/* RESPONSIVE SCALING */
+@media (max-width: 1024px) {
+  .pillars-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .pillar-card {
+    padding: 3rem 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .timeline-container {
+    padding-left: 2rem;
+  }
+  
+  .timeline-container::before {
+    left: 7px;
+  }
+  
+  .step-marker {
+    left: -2rem;
+    width: 16px;
+    height: 16px;
+    top: 6px;
+  }
+  
+  .step-num {
+    display: none;
+  }
+  
+  .step-content {
+    padding: 1.75rem;
+  }
+  
+  .step-content h4 {
+    font-size: 1.25rem;
+  }
+  
+  .step-content p {
+    font-size: 0.88rem;
+  }
+}
