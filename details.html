@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Property Details | AuctionPropertyToday</title>
+  
+  <!-- Critical Stylesheets -->
+  <link rel="stylesheet" href="styles/index.css">
+  <link rel="stylesheet" href="styles/components.css">
+  <link rel="stylesheet" href="styles/pages.css">
+
+  <!-- Immediate Theme Lock -->
+  <script>
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  </script>
+
+  <!-- Supabase Live Ingress -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="services/supabaseClient.js"></script>
+</head>
+<body>
+
+  <!-- Core Content Details Wrapper -->
+  <main class="container details-page-wrapper" id="details-root-container">
+    <!-- Dynamically loaded property details or loading skeleton -->
+    <div style="padding: 10rem 0; text-align: center;">
+      <div class="skeleton" style="width:50px; height:50px; border-radius:50%; display:inline-block;"></div>
+      <p style="color:var(--text-muted); font-size:0.9rem; margin-top:1rem;">Loading property details...</p>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="components/navbar.js"></script>
+  <script src="components/quickViewModal.js"></script>
+  <script src="components/footer.js"></script>
+
+  <!-- Interactive Carousel & Form Logics -->
+  <script>
+    let activeSlideIndex = 0;
+    let slidesCount = 0;
+
+    // Slide controllers
+    function moveCarousel(direction) {
+      const container = document.getElementById('details-slides-container');
+      const dots = document.querySelectorAll('.carousel-dot');
+      if (!container || dots.length === 0) return;
+
+      activeSlideIndex = (activeSlideIndex + direction + slidesCount) % slidesCount;
+      container.style.transform = `translateX(-${activeSlideIndex * 100}%)`;
+      
+      dots.forEach((dot, index) => {
+        dot.className = index === activeSlideIndex ? 'carousel-dot active' : 'carousel-dot';
+      });
+    }
+
+    function setCarouselSlide(slideIdx) {
+      const container = document.getElementById('details-slides-container');
+      const dots = document.querySelectorAll('.carousel-dot');
+      if (!container || dots.length === 0) return;
+
+      activeSlideIndex = slideIdx;
+      container.style.transform = `translateX(-${activeSlideIndex * 100}%)`;
+      
+      dots.forEach((dot, index) => {
+        dot.className = index === activeSlideIndex ? 'carousel-dot active' : 'carousel-dot';
+      });
+    }
+
+    // Submit inquiry lead directly to Supabase inquiries table
+    async function submitPropertyInquiry(event, propertyId, propertyName) {
+      event.preventDefault();
+      
+      const form = event.target;
+      const name = document.getElementById('inq-name').value.trim();
+      const phone = document.getElementById('inq-phone').value.trim();
+      const email = document.getElementById('inq-email').value.trim();
+      const budget = document.getElementById('inq-budget').value.trim();
+      const message = document.getElementById('inq-message').value.trim();
+
+      const btn = form.querySelector('button[type="submit"]');
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "Sending...";
+
+      if (window.supabaseClient) {
+        const { data, error } = await window.supabaseClient.from('inquiries').insert([{
+          property_id: propertyId,
+          name: name,
+          phone: phone,
+          email: email,
+          budget: budget,
+          message: message,
+          status: 'pending',
+          created_at: new Date().toISOString()
+        }]);
+
+        btn.disabled = false;
+        btn.textContent = originalText;
+
+        if (error) {
+          alert(`Error submitting inquiry: ${error.message}`);
+          return;
+        }
+
+        // Reset the form
+        form.reset();
+
+        // Spawn gorgeous VIP premium popup alert
+        const alertBox = document.createElement('div');
+        alertBox.style.cssText = `
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: var(--bg-surface);
+          border: 1px solid var(--border-color-gold);
+          padding: 3rem;
+          border-radius: 8px;
+          z-index: 10000;
+          box-shadow: 0 30px 70px rgba(0,0,0,0.6), 0 0 30px var(--gold-glow);
+          max-width: 500px;
+          width: 90%;
+          text-align: center;
+          animation: detailsNotifyFade 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        `;
+        alertBox.innerHTML = `
+          <div style="font-size:3rem; margin-bottom:1.5rem;">📜</div>
+          <h3 style="font-family:var(--font-serif); font-size:1.8rem; color:var(--gold-primary); margin-bottom:1rem;">Inquiry Received</h3>
+          <p style="color:var(--text-secondary); font-size:0.95rem; line-height:1.6; margin-bottom:2rem;">Your inquiry for <strong>${propertyName}</strong> has been received. Our team will contact you within 2 hours.</p>
+          <button class="btn-luxury" style="padding:0.75rem 2.5rem;" onclick="this.parentElement.remove()">OK</button>
+        `;
+        
+        document.body.appendChild(alertBox);
+
+        // Inject dynamic keyframe for details popup alert if not present
+        if (!document.getElementById('details-notify-animation')) {
+          const style = document.createElement('style');
+          style.id = 'details-notify-animation';
+          style.innerHTML = `
+            @keyframes detailsNotifyFade {
+              from { opacity: 0; transform: translate(-50%, -40%); }
+              to { opacity: 1; transform: translate(-50%, -50%); }
+            }
+          `;
+          document.head.appendChild(style);
+        }
+      }
+    }
+
+    // Load full details catalog from Supabase
+    async function loadPropertyDetails() {
+      const container = document.getElementById('details-root-container');
+      if (!container || !window.supabaseClient) return;
+
+      // Extract ID from query parameter
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+
+      if (!id) {
+        container.innerHTML = `
+          <div style="text-align:center; padding:5rem 0;">
+            <h2 style="font-family:var(--font-serif); font-size:2rem; margin-bottom:1rem;">Property ID Missing</h2>
+            <p style="color:var(--text-secondary); margin-bottom:2rem;">Please select a property from the listings.</p>
+            <a href="listings.html" class="btn-luxury">VIEW PROPERTIES</a>
+          </div>
+        `;
+        return;
+      }
+
+      // Query real database properties table with images join
+      const { data, error } = await window.supabaseClient
+        .from('properties')
+        .select('*, property_images(*)')
+        .eq('id', id);
+
+      if (error || !data || data.length === 0) {
+        container.innerHTML = `
+          <div style="text-align:center; padding:5rem 0;">
+            <h2 style="font-family:var(--font-serif); font-size:2rem; margin-bottom:1rem;">Property Not Found</h2>
+            <p style="color:var(--text-secondary); margin-bottom:2rem;">This property is not available or details are restricted.</p>
+            <a href="listings.html" class="btn-luxury">VIEW PROPERTIES</a>
+          </div>
+        `;
+        return;
+      }
+
+      const item = data[0];
+      const images = item.property_images && item.property_images.length > 0
+        ? item.property_images.map(img => img.image_url)
+        : ["https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80"];
+
+      slidesCount = images.length;
+      activeSlideIndex = 0;
+
+      const rawPrice = item.price || item.reservation_price || 0;
+      const priceFormatted = `₹${(rawPrice / 10000000).toFixed(1)} Cr`;
+      const emdPriceFormatted = `₹${(rawPrice * 0.1 / 10000000).toFixed(2)} Cr`;
+      const auctionDate = item.auction_date || new Date().toISOString();
+
+      const pName = item.title || item.property_name || 'Untitled';
+      const pClass = item.property_type || item.property_classification || item.type || 'Villa';
+      const pArea = item.area_sqft || item.built_area || item.area || 0;
+      const pBHK = item.bedrooms || item.bhk_configuration || 1;
+      const pBaths = item.bathrooms || item.bathroom_configuration || 1;
+      const pLoc = item.location || `${item.city}, ${item.state}`;
+
+      // Render the entire layout
+      container.innerHTML = `
+        <!-- Top header row -->
+        <div class="details-header">
+          <div class="details-meta">
+            <div class="details-title">
+              <span class="apple-subtitle">${item.city} • ${pClass}</span>
+              <h1>${pName}</h1>
+              <div class="details-location">
+                <span>📍</span>
+                <span>Verified Address • ${pLoc}</span>
+              </div>
+            </div>
+            
+            <div class="details-price-badge">
+              <div class="price-label">Price</div>
+              <div class="price-value">${priceFormatted}</div>
+            </div>
+          </div>
+          
+          <div class="details-quick-specs">
+            <div class="details-spec-box">
+              <span class="spec-lbl">Area</span>
+              <span class="spec-val">${pArea.toLocaleString('en-IN')} sq ft</span>
+            </div>
+            <div class="details-spec-box" style="border-left:1px solid var(--border-color); padding-left:2.5rem;">
+              <span class="spec-lbl">Bedrooms</span>
+              <span class="spec-val">${pBHK} BHK</span>
+            </div>
+            <div class="details-spec-box" style="border-left:1px solid var(--border-color); padding-left:2.5rem;">
+              <span class="spec-lbl">Bathrooms</span>
+              <span class="spec-val">${pBaths} Baths</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Luxury Carousel Image Gallery -->
+        <div class="luxury-carousel">
+          <div class="carousel-slides-container" id="details-slides-container">
+            ${images.map(img => `
+              <div class="carousel-slide">
+                <img src="${img}" alt="${item.title}" />
+              </div>
+            `).join('')}
+          </div>
+          
+          <!-- Carousel Arrows -->
+          <div class="carousel-controls">
+            <button class="carousel-arrow" onclick="moveCarousel(-1)">←</button>
+            <button class="carousel-arrow" onclick="moveCarousel(1)">→</button>
+          </div>
+          
+          <!-- Dots -->
+          <div class="carousel-dots">
+            ${images.map((_, idx) => `
+              <button class="carousel-dot ${idx === 0 ? 'active' : ''}" onclick="setCarouselSlide(${idx})"></button>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- 2 Column details grid -->
+        <div class="details-grid">
+          
+          <!-- Left Column (Wide) -->
+          <div>
+            <div class="details-section">
+              <h3>Property Description</h3>
+              <p>${item.description || item.property_description || ''}</p>
+            </div>
+            
+            <div class="details-section">
+              <h3>Property Specifications</h3>
+              <div class="specs-table-grid">
+                <div class="spec-table-row">
+                  <span class="spec-table-label">Property ID</span>
+                  <span class="spec-table-value">#ATP-${item.id}</span>
+                </div>
+                <div class="spec-table-row">
+                  <span class="spec-table-label">Property Type</span>
+                  <span class="spec-table-value">${pClass}</span>
+                </div>
+                <div class="spec-table-row">
+                  <span class="spec-table-label">City</span>
+                  <span class="spec-table-value">${item.city || ''}</span>
+                </div>
+                <div class="spec-table-row">
+                  <span class="spec-table-label">Bedrooms</span>
+                  <span class="spec-table-value">${pBHK} Bedrooms</span>
+                </div>
+                <div class="spec-table-row">
+                  <span class="spec-table-label">Area (sq ft)</span>
+                  <span class="spec-table-value">${pArea.toLocaleString('en-IN')} sq ft</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="details-section" style="border-bottom:none;">
+              <h3>Amenities</h3>
+              <div class="amenities-grid">
+                ${item.amenities ? item.amenities.map(amenity => `
+                  <div class="amenity-item">
+                    <span class="amenity-icon">✨</span>
+                    <span class="amenity-name">${amenity}</span>
+                  </div>
+                `).join('') : ''}
+              </div>
+            </div>
+            
+            <!-- Exact Auction legal disclosures table -->
+            <div class="details-section" style="border-top:1px solid var(--border-color); border-bottom:none; padding-bottom:0;">
+              <h3>Auction Details</h3>
+              <div class="luxury-table-wrapper" style="margin-bottom:0;">
+                <table class="luxury-table">
+                  <thead>
+                    <tr>
+                      <th>Details</th>
+                      <th>Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Price</td>
+                      <td style="font-weight:600; color:var(--text-primary); font-family:var(--font-serif); font-size:1.1rem;">${priceFormatted}</td>
+                    </tr>
+                    <tr>
+                      <td>Deposit (EMD 10%)</td>
+                      <td style="font-weight:600; color:var(--text-primary); font-family:var(--font-serif); font-size:1.1rem;">${emdPriceFormatted}</td>
+                    </tr>
+                    <tr>
+                      <td>Minimum Bid Increase</td>
+                      <td>₹5,00,000 Minimum</td>
+                    </tr>
+                    <tr>
+                      <td>Title Status</td>
+                      <td><span class="status-pill accepted">Vetted & Cleared</span></td>
+                    </tr>
+                    <tr>
+                      <td>Auction Date</td>
+                      <td>${new Date(auctionDate).toLocaleDateString('en-IN', {day:'numeric', month:'long', year:'numeric'})} at 11:00 AM</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Right Column (Sticky side panel) -->
+          <div class="sticky-inquiry-panel">
+            
+            <!-- Auction Countdown timer -->
+            <div class="auction-info-card glassmorphism">
+              <div class="auction-timer-box">
+                <div class="timer-title">Auction Countdown</div>
+                <div class="timer-countdown" id="details-timer-clock">00d 00h 00m 00s</div>
+              </div>
+              <div class="auction-details-mini">
+                <div class="mini-detail-row">
+                  <span class="mini-detail-label">Status</span>
+                  <span class="mini-detail-value" style="color:var(--gold-primary); font-weight:600;">ACTIVE BIDDING</span>
+                </div>
+                <div class="mini-detail-row">
+                  <span class="mini-detail-label">Verification</span>
+                  <span class="mini-detail-value" style="color:var(--status-accepted); font-weight:600;">VERIFIED</span>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+          
+        </div>
+      `;
+
+      startDetailsCountdown(auctionDate);
+    }
+
+    // Precise live countdown clock (updates seconds)
+    function startDetailsCountdown(dateString) {
+      const clock = document.getElementById('details-timer-clock');
+      if (!clock) return;
+
+      const targetDate = new Date(dateString).getTime();
+
+      function updateClock() {
+        const now = new Date().getTime();
+        const distance = targetDate - now;
+
+        if (distance < 0) {
+          clock.innerHTML = "AUCTION LIVE NOW";
+          clock.style.color = "var(--gold-hover)";
+          return;
+        }
+
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        // format strings with leading zeros
+        const d = days < 10 ? '0' + days : days;
+        const h = hours < 10 ? '0' + hours : hours;
+        const m = minutes < 10 ? '0' + minutes : minutes;
+        const s = seconds < 10 ? '0' + seconds : seconds;
+
+        clock.innerHTML = `${d}d ${h}h ${m}m ${s}s`;
+      }
+
+      updateClock();
+      setInterval(updateClock, 1000); // Ticking every second
+    }
+
+    // Run dynamic dossier fetching on load
+    window.addEventListener('DOMContentLoaded', loadPropertyDetails);
+  </script>
+</body>
+</html>

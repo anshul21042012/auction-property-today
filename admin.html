@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard Board | AuctionPropertyToday</title>
+  
+  <!-- Critical Stylesheets -->
+  <link rel="stylesheet" href="styles/index.css">
+  <link rel="stylesheet" href="styles/components.css">
+  <link rel="stylesheet" href="styles/pages.css">
+  <link rel="stylesheet" href="styles/admin.css">
+
+  <style>
+    /* Overlay-proof hover styles & z-index click guarantees */
+    .btn-table-action {
+      cursor: pointer !important;
+      pointer-events: auto !important;
+      position: relative !important;
+      z-index: 9999 !important;
+    }
+    
+    /* New Operational Dashboard Redesign Styles */
+    .action-card-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 1.5rem 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: rgba(18, 18, 20, 0.4);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      width: 100%;
+    }
+    .action-card-btn:hover {
+      border-color: var(--gold-primary);
+      background: rgba(212, 175, 55, 0.03);
+      transform: translateY(-2px);
+    }
+    .action-icon {
+      font-size: 1.5rem;
+    }
+    .action-title {
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+    .dash-property-card {
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      overflow: hidden;
+      background: rgba(18, 18, 20, 0.2);
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .dash-property-card:hover {
+      border-color: var(--gold-primary);
+      transform: translateY(-2px);
+    }
+    .dash-property-thumb {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+    }
+    .dash-property-info {
+      padding: 0.75rem;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .dash-property-title {
+      font-family: var(--font-serif);
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .dash-property-meta {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+    }
+    .dash-property-price {
+      font-family: var(--font-serif);
+      font-size: 0.9rem;
+      color: var(--gold-primary);
+      font-weight: 600;
+      margin-top: auto;
+      padding-top: 0.25rem;
+    }
+    .dash-auction-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: rgba(18, 18, 20, 0.2);
+      transition: all 0.3s ease;
+    }
+    .dash-auction-item:hover {
+      border-color: var(--gold-primary);
+    }
+    .dash-auction-item.urgent {
+      border-color: rgba(226, 76, 76, 0.4);
+      background: rgba(226, 76, 76, 0.02);
+    }
+    .dash-auction-item.urgent:hover {
+      border-color: var(--status-cancelled);
+    }
+    .badge-featured-mini {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background: var(--gold-gradient);
+      color: #0c0c0e;
+      font-size: 0.6rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 0.2rem 0.4rem;
+      border-radius: 2px;
+      letter-spacing: 0.05em;
+    }
+  </style>
+
+  <!-- Immediate Theme Lock & Secure Login Verification -->
+  <script>
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    // Synchronous Supabase Session Route Guard
+    const sessionKey = "sb-xqhrjhvbustdwmrmikya-auth-token";
+    if (!localStorage.getItem(sessionKey)) {
+      window.location.replace("login.html");
+    }
+  </script>
+
+  <!-- Supabase Live Ingress -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="services/supabaseClient.js"></script>
+</head>
+<body>
+
+  <!-- Admin Layout Wrapper -->
+  <main class="admin-dashboard-container">
+    
+    <!-- Left Sidebar Menu Panel -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-profile">
+        <div class="profile-avatar">AD</div>
+        <div class="profile-info">
+          <h4>Venkatesh Rao</h4>
+          <p>Admin</p>
+        </div>
+      </div>
+      
+      <ul class="sidebar-menu">
+        <li>
+          <button class="sidebar-menu-btn active" id="tab-btn-dashboard" onclick="switchDashboardTab('dashboard')">
+            <span>📈</span> Dashboard
+          </button>
+        </li>
+        <li>
+          <button class="sidebar-menu-btn" id="tab-btn-properties" onclick="switchDashboardTab('properties')">
+            <span>🏠</span> Manage Properties
+          </button>
+        </li>
+        <li>
+          <button class="sidebar-menu-btn" id="tab-btn-inquiries" onclick="switchDashboardTab('inquiries')">
+            <span>✉️</span> Inquiries
+          </button>
+        </li>
+
+      </ul>
+
+      <div style="margin-top:auto;">
+        <button class="btn-luxury-outline" style="width:100%; border-radius:4px; padding:0.6rem 1rem;" onclick="logoutAdminSession()">
+          Sign Out
+        </button>
+      </div>
+    </aside>
+
+    <!-- Right Workspace Area -->
+    <section class="admin-content">
+      
+      <!-- 1. MANAGE PROPERTIES TAB -->
+      <div class="admin-tab-pane" id="pane-properties">
+        <div class="admin-page-header">
+          <div>
+            <h2>Properties</h2>
+            <p>Manage your properties.</p>
+          </div>
+          <button class="btn-luxury" onclick="openPropertyFormModal('add')">
+            <span>+</span> Add Property
+          </button>
+        </div>
+
+        <!-- Roster Table Grid -->
+        <div class="luxury-table-wrapper">
+          <table class="luxury-table">
+            <thead>
+              <tr>
+                <th>Property</th>
+                <th>City</th>
+                <th>Type</th>
+                <th>BHK</th>
+                <th>Price</th>
+                <th>Auction Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-properties-table-body">
+              <!-- Dynamically loaded -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 2. INQUIRIES TRACKER TAB -->
+      <div class="admin-tab-pane" id="pane-inquiries">
+        <div class="admin-page-header">
+          <div>
+            <h2>Property Inquiries</h2>
+            <p>Track and manage buyer inquiries.</p>
+          </div>
+        </div>
+
+        <!-- Inquiries Log Table -->
+        <div class="luxury-table-wrapper">
+          <table class="luxury-table">
+            <thead>
+              <tr>
+                <th>Contact</th>
+                <th>Budget</th>
+                <th>Message</th>
+                <th>Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="admin-inquiries-table-body">
+              <!-- Dynamically loaded -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 3. DASHBOARD OVERVIEW TAB -->
+      <div class="admin-tab-pane active" id="pane-dashboard">
+        <div class="admin-page-header">
+          <div>
+            <h2>Dashboard</h2>
+            <p>Welcome back, Venkatesh. Here is your operational overview.</p>
+          </div>
+        </div>
+
+        <!-- TOP SECTION — QUICK OVERVIEW CARDS -->
+        <div class="analytics-grid" style="margin-bottom: 2.5rem;">
+          
+          <div class="metric-card">
+            <div class="metric-info">
+              <h4>Total Properties</h4>
+              <div class="metric-value" id="dash-total-properties">0</div>
+            </div>
+            <div class="metric-icon">🏠</div>
+          </div>
+          
+          <div class="metric-card">
+            <div class="metric-info">
+              <h4>Active Listings</h4>
+              <div class="metric-value" id="dash-active-listings">0</div>
+            </div>
+            <div class="metric-icon">✨</div>
+          </div>
+          
+          <div class="metric-card">
+            <div class="metric-info">
+              <h4>Total Inquiries</h4>
+              <div class="metric-value" id="dash-total-inquiries">0</div>
+            </div>
+            <div class="metric-icon">✉️</div>
+          </div>
+          
+          <div class="metric-card">
+            <div class="metric-info">
+              <h4>Upcoming Auctions</h4>
+              <div class="metric-value" id="dash-upcoming-auctions">0</div>
+            </div>
+            <div class="metric-icon">⏳</div>
+          </div>
+
+        </div>
+
+        <!-- SECOND SECTION — IMPORTANT ACTIONS -->
+        <div style="margin-bottom: 2.5rem;">
+          <h3 style="font-family: var(--font-sans); font-size: 1rem; text-transform: uppercase; color: var(--gold-primary); letter-spacing: 0.05em; margin-bottom: 1.25rem; font-weight: 600;">Quick Actions</h3>
+          <div class="quick-actions-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem;">
+            
+            <button class="action-card-btn" onclick="openPropertyFormModal('add')">
+              <span class="action-icon">➕</span>
+              <span class="action-title">Add Property</span>
+            </button>
+            
+            <button class="action-card-btn" onclick="switchDashboardTab('properties')">
+              <span class="action-icon">🏠</span>
+              <span class="action-title">View All Properties</span>
+            </button>
+            
+            <button class="action-card-btn" onclick="switchDashboardTab('inquiries')">
+              <span class="action-icon">✉️</span>
+              <span class="action-title">View Inquiries</span>
+            </button>
+            
+            <button class="action-card-btn" onclick="switchDashboardTab('properties')">
+              <span class="action-icon">⭐</span>
+              <span class="action-title">Featured Properties</span>
+            </button>
+
+          </div>
+        </div>
+
+        <!-- THIRD & FOURTH SECTIONS — RECENT INQUIRIES & UPCOMING AUCTIONS -->
+        <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 2rem; margin-bottom: 2.5rem;">
+          
+          <!-- Recent Inquiries Panel -->
+          <div class="glassmorphism" style="padding: 2rem; border-radius: 8px;">
+            <h3 style="font-family: var(--font-sans); font-size: 1rem; text-transform: uppercase; color: var(--gold-primary); letter-spacing: 0.05em; margin-bottom: 1.25rem; font-weight: 600;">Recent Inquiries</h3>
+            <div class="luxury-table-wrapper" style="margin: 0; background: transparent; border: none; box-shadow: none;">
+              <table class="luxury-table" style="min-width: unset; width: 100%;">
+                <thead>
+                  <tr>
+                    <th>Customer</th>
+                    <th>Budget</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="dash-recent-inquiries-body">
+                  <!-- Dynamically loaded -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Upcoming Auctions Panel -->
+          <div class="glassmorphism" style="padding: 2rem; border-radius: 8px;">
+            <h3 style="font-family: var(--font-sans); font-size: 1rem; text-transform: uppercase; color: var(--gold-primary); letter-spacing: 0.05em; margin-bottom: 1.25rem; font-weight: 600;">Upcoming Auctions (Next 7 Days)</h3>
+            <div id="dash-upcoming-auctions-list" style="display: flex; flex-direction: column; gap: 1rem; max-height: 250px; overflow-y: auto;">
+              <!-- Dynamically loaded -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- FIFTH SECTION — RECENTLY ADDED PROPERTIES -->
+        <div class="glassmorphism" style="padding: 2rem; border-radius: 8px; margin-bottom: 1rem;">
+          <h3 style="font-family: var(--font-sans); font-size: 1rem; text-transform: uppercase; color: var(--gold-primary); letter-spacing: 0.05em; margin-bottom: 1.25rem; font-weight: 600;">Recently Added Properties</h3>
+          <div id="dash-recent-properties-list" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.5rem;">
+            <!-- Dynamically loaded -->
+          </div>
+        </div>
+
+      </div>
+
+
+
+    </section>
+  </main>
+
+  <!-- ADD / EDIT PROPERTY DIALOG MODAL -->
+  <div class="admin-modal-overlay" id="property-form-modal">
+    <div class="modal-backdrop" onclick="closePropertyFormModal()"></div>
+    <div class="admin-modal-card glassmorphism">
+      <div class="admin-modal-header">
+        <h3 id="property-modal-title">Add Property</h3>
+        <button class="modal-close-btn" style="position:static; width:30px; height:30px;" onclick="closePropertyFormModal()">×</button>
+      </div>
+      
+      <div class="admin-modal-body">
+        <form class="luxury-form" id="admin-property-form">
+          <input type="hidden" id="form-property-id" />
+          
+          <div class="form-group">
+            <label for="form-title">Property Title</label>
+            <input type="text" id="form-title" class="form-input" placeholder="e.g. The Imperial Bungalow..." required />
+          </div>
+
+          <div class="form-group">
+            <label for="form-desc">Property Description</label>
+            <textarea id="form-desc" class="form-input" rows="5" placeholder="Detailed property description..." required></textarea>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="form-price">Price (₹)</label>
+              <input type="number" id="form-price" class="form-input" placeholder="e.g. 450000000 (45 Cr)" required />
+            </div>
+            
+            <div class="form-group">
+              <label for="form-type">Property Type</label>
+              <select id="form-type" class="form-input" required>
+                <option value="Villa">Luxury Villa</option>
+                <option value="Penthouse">Sea Penthouse</option>
+                <option value="Bungalow">Lutyens' Bungalow</option>
+                <option value="Heritage Estate">Heritage Manor</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="form-city">City</label>
+              <input type="text" id="form-city" class="form-input" placeholder="e.g. Mumbai" required />
+            </div>
+            
+            <div class="form-group">
+              <label for="form-state">State</label>
+              <input type="text" id="form-state" class="form-input" placeholder="e.g. Maharashtra" required />
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="form-area">Area (sq ft)</label>
+              <input type="number" id="form-area" class="form-input" placeholder="e.g. 8500" required />
+            </div>
+            
+            <div class="form-group">
+              <label for="form-bedrooms">Bedrooms</label>
+              <input type="number" id="form-bedrooms" class="form-input" placeholder="e.g. 5" min="1" required />
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="form-bathrooms">Bathrooms</label>
+              <input type="number" id="form-bathrooms" class="form-input" placeholder="e.g. 6" min="1" required />
+            </div>
+            
+            <div class="form-group">
+              <label for="form-auction-date">Auction Date</label>
+              <input type="datetime-local" id="form-auction-date" class="form-input" required />
+            </div>
+          </div>
+
+          <!-- File Upload simulated dropzone -->
+          <div class="form-group">
+            <label>Upload Images</label>
+            <div class="file-dropzone" onclick="document.getElementById('form-image-input').click()">
+              <input type="file" id="form-image-input" multiple style="display:none;" onchange="handleMultipleImagesSelect(event)" />
+              <div class="file-dropzone-icon">📷</div>
+              <div class="file-dropzone-text" id="form-dropzone-text-label">Click to select images</div>
+              <div class="file-dropzone-subtext">Images will be uploaded to Supabase Storage.</div>
+            </div>
+          </div>
+
+          <!-- Featured Auction promotion option -->
+          <div class="form-group">
+            <div class="form-toggle-group">
+              <input type="checkbox" id="form-featured" />
+              <label for="form-featured">Featured Property</label>
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; gap:1.25rem; margin-top:2rem;">
+            <button type="button" class="btn-luxury-outline" style="padding:0.75rem 2rem;" onclick="closePropertyFormModal()">Cancel</button>
+            <button type="submit" class="btn-luxury" style="padding:0.75rem 2rem;">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELETE CONFIRMATION MODAL -->
+  <div class="admin-modal-overlay" id="delete-confirm-modal">
+    <div class="modal-backdrop" onclick="closeDeleteConfirmModal()"></div>
+    <div class="admin-modal-card glassmorphism" style="max-width: 420px; padding: 2.5rem; text-align: center; border-radius: 8px;">
+      <div style="font-size: 3rem; margin-bottom: 1.5rem;">⚠️</div>
+      <h3 style="font-family: var(--font-serif); font-size: 1.6rem; color: var(--text-primary); margin-bottom: 1rem;">Delete Property?</h3>
+      <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6; margin-bottom: 2rem;">Are you sure you want to delete this property? This action cannot be undone.</p>
+      <div style="display: flex; justify-content: center; gap: 1.25rem;">
+        <button class="btn-luxury-outline" style="padding: 0.7rem 1.8rem;" onclick="closeDeleteConfirmModal()">CANCEL</button>
+        <button class="btn-luxury" style="padding: 0.7rem 1.8rem; background: var(--status-cancelled); border-color: var(--status-cancelled);" id="btn-confirm-delete-action" onclick="deletePropertyRoster()">DELETE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="components/navbar.js"></script>
+  <script src="components/footer.js"></script>
+
+  <!-- Dashboard Logics & CRUD controllers -->
+  <script>
+    // Premium Toast Notification System
+    function showToast(message, type = 'success') {
+      let toastContainer = document.getElementById('toast-container');
+      if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.style.cssText = `
+          position: fixed;
+          top: 2rem;
+          right: 2rem;
+          z-index: 100000;
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+          max-width: 400px;
+          width: 90%;
+        `;
+        document.body.appendChild(toastContainer);
+      }
+
+      const toast = document.createElement('div');
+      toast.className = 'glassmorphism';
+      
+      const borderColor = type === 'success' ? 'var(--gold-primary)' : 'var(--status-cancelled)';
+      const icon = type === 'success' ? '✨' : '⚠️';
+      
+      toast.style.cssText = `
+        padding: 1rem 1.5rem;
+        border-radius: 4px;
+        border: 1px solid ${borderColor};
+        background: rgba(18, 18, 20, 0.9);
+        color: var(--text-primary);
+        font-family: var(--font-sans);
+        font-size: 0.9rem;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        transform: translateX(120%);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      `;
+      
+      toast.innerHTML = `
+        <span style="font-size: 1.1rem;">${icon}</span>
+        <span style="flex-grow: 1; line-height: 1.4;">${message}</span>
+        <button style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; line-height: 1;" onclick="this.parentElement.remove()">×</button>
+      `;
+
+      toastContainer.appendChild(toast);
+      
+      // Slide in
+      setTimeout(() => {
+        toast.style.transform = 'translateX(0)';
+      }, 50);
+
+      // Auto dismiss after 4.5 seconds
+      setTimeout(() => {
+        toast.style.transform = 'translateX(120%)';
+        setTimeout(() => toast.remove(), 400);
+      }, 4500);
+    }
+
+    // Asynchronous Session Route Guard double-audit
+    window.addEventListener('DOMContentLoaded', async () => {
+      if (window.supabaseClient) {
+        const { data: { session }, error } = await window.supabaseClient.auth.getSession();
+        if (error || !session) {
+          localStorage.removeItem("sb-xqhrjhvbustdwmrmikya-auth-token");
+          window.location.replace("login.html");
+        } else {
+          // Dynamic profile mapping from real Supabase user email
+          const email = session.user.email;
+          const nameLabel = document.querySelector('.profile-info h4');
+          const avatarLabel = document.querySelector('.profile-avatar');
+          
+          if (nameLabel) nameLabel.textContent = email.split('@')[0];
+          if (avatarLabel) avatarLabel.textContent = email.substring(0, 2).toUpperCase();
+        }
+      }
+    });
+
+    // Tab switching system
+    function switchDashboardTab(tabName) {
+      document.querySelectorAll('.sidebar-menu-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.admin-tab-pane').forEach(pane => pane.classList.remove('active'));
+
+      const activeBtn = document.getElementById(`tab-btn-${tabName}`);
+      const activePane = document.getElementById(`pane-${tabName}`);
+      if (activeBtn) activeBtn.classList.add('active');
+      if (activePane) activePane.classList.add('active');
+
+      if (tabName === 'dashboard') {
+        loadDashboardOverview();
+      } else if (tabName === 'properties') {
+        loadPropertiesRoster();
+      } else if (tabName === 'inquiries') {
+        loadInquiriesTracker();
+      }
+    }
+
+    // Secure Logout Session
+    async function logoutAdminSession() {
+      const confirmLogout = confirm("Are you sure you want to sign out?");
+      if (!confirmLogout) return;
+
+      if (window.supabaseClient) {
+        await window.supabaseClient.auth.signOut();
+      }
+      localStorage.removeItem("sb-xqhrjhvbustdwmrmikya-auth-token");
+      window.location.replace("login.html");
+    }
+
+    // ----------------------------------------------------
+    // IMAGE SELECTION & UPLOADER STATE ENGINE
+    // ----------------------------------------------------
+    let selectedUploadFiles = [];
+
+    function handleMultipleImagesSelect(event) {
+      selectedUploadFiles = Array.from(event.target.files);
+      const textLabel = document.getElementById('form-dropzone-text-label');
+      if (textLabel) {
+        textLabel.textContent = `${selectedUploadFiles.length} image(s) selected. Ready for upload.`;
+        textLabel.style.color = "var(--gold-hover)";
+      }
+    }
+
+    // Helper: Upload multiple assets to Supabase Storage and register public URLs in property_images
+    async function uploadMultipleAssets(propertyId, files, progressCallback) {
+      if (!window.supabaseClient || files.length === 0) return;
+
+      const client = window.supabaseClient;
+      let index = 1;
+      
+      for (const file of files) {
+        if (progressCallback) {
+          progressCallback(`Uploading image ${index} of ${files.length}...`);
+        }
+        
+        const fileExt = file.name.split('.').pop();
+        const fileName = `property_${propertyId}/${Date.now()}_${Math.floor(Math.random() * 1000)}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        // 1. Upload file to 'property-images' bucket
+        const { data, error } = await client.storage
+          .from('property-images')
+          .upload(filePath, file, { cacheControl: '3600', upsert: true });
+
+        if (error) {
+          console.error("Asset upload failed for file:", file.name, error);
+          showToast(`Upload failed for ${file.name}: ${error.message}`, 'error');
+          continue;
+        }
+
+        // 2. Get Public URL
+        const { data: { publicUrl } } = client.storage
+          .from('property-images')
+          .getPublicUrl(filePath);
+
+        // 3. Register URL in 'property_images' table
+        const imageRecord = {
+          property_id: propertyId,
+          image_url: publicUrl
+        };
+        await client.from('property_images').insert([imageRecord]);
+        index++;
+      }
+    }
+
+    // ----------------------------------------------------
+    // PROPERTIES MANAGER & CRUD OPERATIONS
+    // ----------------------------------------------------
+    async function loadPropertiesRoster() {
+      const tableBody = document.getElementById('admin-properties-table-body');
+      if (!tableBody || !window.supabaseClient) return;
+
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align:center; padding:3rem 0;">
+            <div class="skeleton" style="width:30px; height:30px; border-radius:50%; display:inline-block;"></div>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin-top:0.5rem;">Loading properties...</p>
+          </td>
+        </tr>
+      `;
+
+      const { data, error } = await window.supabaseClient
+        .from('properties')
+        .select('*, property_images(*)')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        showToast(`Failed to load properties: ${error.message}`, 'error');
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align:center; padding:3rem 0; color:var(--status-cancelled);">
+              Error loading properties.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align:center; padding:3rem 0; color:var(--text-muted);">
+              No properties found.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tableBody.innerHTML = '';
+      data.forEach(item => {
+        const images = item.property_images && item.property_images.length > 0
+          ? item.property_images.map(img => img.image_url)
+          : ["https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80"];
+
+        const rawPrice = item.price || item.reservation_price || 0;
+        const priceFormatted = `₹${(rawPrice / 10000000).toFixed(1)} Cr`;
+        const auctionDate = item.auction_date || new Date().toISOString();
+
+        const pName = item.title || item.property_name || 'Untitled Asset';
+        const pClass = item.property_type || item.property_classification || item.type || 'Villa';
+        const pBHK = item.bedrooms || item.bhk_configuration || 1;
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>
+            <div class="table-property-cell">
+              <img src="${images[0]}" alt="${pName}" class="table-property-thumb" />
+              <span class="table-property-title">${pName}</span>
+            </div>
+          </td>
+          <td>${item.city || ''}</td>
+          <td>${pClass}</td>
+          <td>${pBHK} BHK</td>
+          <td style="font-weight:600; color:var(--text-primary); font-family:var(--font-serif);">${priceFormatted}</td>
+          <td>${new Date(auctionDate).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'})}</td>
+          <td>
+            <div class="table-actions">
+              <button class="btn-table-action edit" onclick="editPropertyRoster('${item.id}')" title="Edit Property">✏️</button>
+              <button class="btn-table-action delete" onclick="confirmDeleteProperty('${item.id}')" title="Delete Property">🗑️</button>
+            </div>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    // Modal Control wrappers
+    function openPropertyFormModal(mode) {
+      const modal = document.getElementById('property-form-modal');
+      const title = document.getElementById('property-modal-title');
+      const form = document.getElementById('admin-property-form');
+      const textLabel = document.getElementById('form-dropzone-text-label');
+      
+      form.reset();
+      document.getElementById('form-property-id').value = '';
+      selectedUploadFiles = [];
+      if (textLabel) {
+        textLabel.textContent = "Click to select images for upload";
+        textLabel.style.color = "var(--text-secondary)";
+      }
+      
+      if (mode === 'add') {
+        title.textContent = "Add New Property";
+      } else {
+        title.textContent = "Edit Property";
+      }
+      
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closePropertyFormModal() {
+      const modal = document.getElementById('property-form-modal');
+      modal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    // CRUD: Save property (Create or Update on Supabase)
+    document.getElementById('admin-property-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      if (!window.supabaseClient) {
+        console.error("[Supabase Error] Client is not loaded on window.");
+        showToast("Supabase client is not initialized.", "error");
+        return;
+      }
+
+      const btn = e.target.querySelector('button[type="submit"]');
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "Saving Property...";
+
+      // 9. Verify authenticated admin session exists before insert
+      const { data: { session }, error: sessionError } = await window.supabaseClient.auth.getSession();
+      if (sessionError || !session) {
+        console.error("[Auth Guard] No active admin session found before insert:", sessionError);
+        showToast("Unauthorized session. Please login again.", "error");
+        setTimeout(() => window.location.replace("login.html"), 1500);
+        btn.disabled = false;
+        btn.textContent = originalText;
+        return;
+      }
+
+      const id = document.getElementById('form-property-id').value;
+      const title = document.getElementById('form-title').value.trim();
+      const description = document.getElementById('form-desc').value.trim();
+      const price = parseFloat(document.getElementById('form-price').value);
+      const type = document.getElementById('form-type').value;
+      const city = document.getElementById('form-city').value.trim();
+      const state = document.getElementById('form-state').value.trim();
+      const area = parseInt(document.getElementById('form-area').value);
+      const bedrooms = parseInt(document.getElementById('form-bedrooms').value);
+      const bathrooms = parseInt(document.getElementById('form-bathrooms').value);
+      const auctionDate = new Date(document.getElementById('form-auction-date').value).toISOString();
+      const featured = document.getElementById('form-featured').checked;
+
+      // 6. Ensure frontend form state / formData uses standardized keys only
+      const formData = {
+        title: title,
+        description: description,
+        price: price,
+        property_type: type,
+        city: city,
+        state: state,
+        area_sqft: area,
+        bedrooms: bedrooms,
+        bathrooms: bathrooms,
+        auction_date: auctionDate,
+        is_featured: featured
+      };
+
+      // 3. Verify ALL insert keys exactly match database columns
+      // 4. Ensure insert query uses EXACT column names
+      // 5. Remove any old field names like propertyRosterTitle, property_name, reservation_price, bhk_configuration
+      const payload = {
+        title: formData.title,
+        description: formData.description,
+        price: Number(formData.price),
+        property_type: formData.property_type,
+        city: formData.city,
+        location: `${formData.city}, ${formData.state}`,
+        state: formData.state,
+        area_sqft: Number(formData.area_sqft),
+        bedrooms: Number(formData.bedrooms),
+        bathrooms: Number(formData.bathrooms),
+        auction_date: formData.auction_date,
+        is_featured: formData.is_featured
+      };
+
+      // 2. Add detailed console logs before Supabase insert
+      console.log("==========================================");
+      console.log("[Supabase Debug] Add-Property Flow Initiated");
+      console.log("[Supabase Debug] Raw Form Inputs (formData):", formData);
+      console.log("[Supabase Debug] Cleaned Target Database Payload:", payload);
+      console.log("==========================================");
+
+      if (!id) {
+        // Mode: CREATE
+        const { data, error } = await window.supabaseClient
+          .from('properties')
+          .insert([payload])
+          .select();
+        
+        // 2. Add detailed console logs after Supabase insert
+        console.log("==========================================");
+        console.log("[Supabase Debug] Insert Response Data:", data);
+        console.log("[Supabase Debug] Insert Response Error Object:", error);
+        console.log("==========================================");
+
+        if (error) {
+          // 7. Print Supabase insert errors clearly in console and UI
+          console.error("[Supabase Insert Failure] Database returned error:", error);
+          showToast(`Save failed: ${error.message} (${error.code})`, 'error');
+          btn.disabled = false;
+          btn.textContent = originalText;
+          return;
+        }
+
+        if (data && data.length > 0) {
+          const newPropId = data[0].id;
+          
+          // If images are selected, upload them
+          if (selectedUploadFiles.length > 0) {
+            await uploadMultipleAssets(newPropId, selectedUploadFiles, (progText) => {
+              btn.textContent = progText;
+            });
+          } else {
+            // Fallback seed images
+            const defaultImages = [
+              "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80"
+            ];
+            const imagePayloads = defaultImages.map(imgUrl => ({
+              property_id: newPropId,
+              image_url: imgUrl
+            }));
+            
+            console.log("[Supabase Debug] Seeding default property image...");
+            const { error: imgError } = await window.supabaseClient.from('property_images').insert(imagePayloads);
+            if (imgError) {
+              console.error("[Supabase Debug] Seeding default image failed:", imgError);
+            }
+          }
+          showToast("Property added successfully.");
+        }
+      } else {
+        // Mode: UPDATE
+        const propertyId = id; // Ensure UUID/String IDs are used directly, do NOT use Number(propertyId)
+        const { data: updateData, error: updateError } = await window.supabaseClient
+          .from('properties')
+          .update(payload)
+          .eq('id', propertyId)
+          .select();
+
+        // 2. Add detailed console logs after Supabase update
+        console.log("==========================================");
+        console.log("[Supabase Debug] Update Action Performed");
+        console.log("[Supabase Debug] Target Property ID (UUID/String):", propertyId);
+        console.log("[Supabase Debug] Standardized Update Payload:", payload);
+        console.log("[Supabase Debug] Update Response Data:", updateData);
+        console.log("[Supabase Debug] Update Response Error Object:", updateError);
+        console.log("==========================================");
+
+        if (updateError) {
+          // 7. Print Supabase insert/update errors clearly in console and UI
+          console.error("[Supabase Update Failure] Database returned error:", updateError);
+          showToast(`Update failed: ${updateError.message} (${updateError.code})`, 'error');
+          btn.disabled = false;
+          btn.textContent = originalText;
+          return;
+        }
+        
+        // If additional images are selected, upload them
+        if (selectedUploadFiles.length > 0) {
+          await uploadMultipleAssets(propertyId, selectedUploadFiles, (progText) => {
+            btn.textContent = progText;
+          });
+        }
+        showToast("Property updated successfully.");
+      }
+
+      btn.disabled = false;
+      btn.textContent = originalText;
+
+      closePropertyFormModal();
+      loadPropertiesRoster();
+      loadDashboardOverview();
+    });
+
+    // CRUD: Edit Property (fills form fields)
+    async function editPropertyRoster(propertyId) {
+      console.log("Edit clicked", propertyId);
+      if (!window.supabaseClient) return;
+
+      console.log("[Supabase Debug] Fetching Property by ID (UUID/String):", propertyId);
+      const { data, error } = await window.supabaseClient
+        .from('properties')
+        .select('*')
+        .eq('id', propertyId);
+      
+      if (error || !data || data.length === 0) {
+        console.error("[Supabase Fetch Failure] Error retrieving property by ID:", error);
+        showToast("Error retrieving property details.", 'error');
+        return;
+      }
+      
+      const item = data[0];
+      console.log("[Supabase Debug] Fetched Property Data:", item);
+      openPropertyFormModal('edit');
+
+      document.getElementById('form-property-id').value = propertyId;
+      document.getElementById('form-title').value = item.title || '';
+      document.getElementById('form-desc').value = item.description || '';
+      document.getElementById('form-price').value = item.price || 0;
+      document.getElementById('form-type').value = item.property_type || 'Villa';
+      document.getElementById('form-city').value = item.city || '';
+      document.getElementById('form-state').value = item.state || '';
+      document.getElementById('form-area').value = item.area_sqft || 0;
+      document.getElementById('form-bedrooms').value = item.bedrooms || 1;
+      document.getElementById('form-bathrooms').value = item.bathrooms || 1;
+      
+      // format date to fit datetime-local inputs
+      if (item.auction_date) {
+        const localDate = new Date(item.auction_date);
+        const offset = localDate.getTimezoneOffset();
+        const adjustedDate = new Date(localDate.getTime() - (offset*60*1000));
+        document.getElementById('form-auction-date').value = adjustedDate.toISOString().substring(0, 16);
+      } else {
+        document.getElementById('form-auction-date').value = '';
+      }
+
+      document.getElementById('form-featured').checked = !!item.is_featured;
+    }
+
+    // CRUD: Delete Property controls
+    let propertyIdToDelete = null;
+
+    function closeDeleteConfirmModal() {
+      const modal = document.getElementById('delete-confirm-modal');
+      modal.classList.remove('open');
+      document.body.style.overflow = '';
+      propertyIdToDelete = null;
+    }
+
+    // CRUD: Confirm delete property (opens confirmation modal)
+    function confirmDeleteProperty(propertyId) {
+      console.log("Delete clicked", propertyId);
+      propertyIdToDelete = propertyId; // Treat strictly as UUID / String
+      const modal = document.getElementById('delete-confirm-modal');
+      if (modal) {
+        modal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    // CRUD: Rebuilt Delete Property operation
+    async function deletePropertyRoster() {
+      if (propertyIdToDelete === null || propertyIdToDelete === undefined || !window.supabaseClient) return;
+
+      const propertyId = propertyIdToDelete; // Use UUID/String directly
+      const btn = document.getElementById('btn-confirm-delete-action');
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "DELETING...";
+
+      // Verify authenticated admin session exists before delete
+      const { data: { session }, error: sessionError } = await window.supabaseClient.auth.getSession();
+      if (sessionError || !session) {
+        console.error("[Auth Guard] No active admin session found before delete:", sessionError);
+        showToast("Unauthorized session. Please login again.", "error");
+        setTimeout(() => window.location.replace("login.html"), 1500);
+        btn.disabled = false;
+        btn.textContent = originalText;
+        return;
+      }
+
+      console.log("==========================================");
+      console.log("[Supabase Debug] Rebuilt Delete Action Initiated");
+      console.log("[Supabase Debug] Target Property ID to Purge (UUID/String):", propertyId);
+      console.log("==========================================");
+
+      try {
+        // 1. Get and delete image assets from storage bucket
+        const { data: images, error: fetchImagesError } = await window.supabaseClient
+          .from('property_images')
+          .select('image_url')
+          .eq('property_id', propertyId);
+        
+        console.log("[Supabase Debug] Associated Images Found:", images, fetchImagesError);
+        
+        if (images && images.length > 0) {
+          const filePaths = images.map(img => {
+            const parts = img.image_url.split('/property-images/');
+            return parts.length > 1 ? parts[1] : null;
+          }).filter(path => path !== null);
+
+          if (filePaths.length > 0) {
+            console.log("[Supabase Debug] Purging Storage Paths:", filePaths);
+            const { data: storageData, error: storageError } = await window.supabaseClient.storage
+              .from('property-images')
+              .remove(filePaths);
+            console.log("[Supabase Debug] Storage Purge Result:", storageData, storageError);
+          }
+        }
+
+        // 2. Delete entries in property_images table
+        const { data: imgDelData, error: imgDelError } = await window.supabaseClient
+          .from('property_images')
+          .delete()
+          .eq('property_id', propertyId)
+          .select();
+        console.log("[Supabase Debug] property_images Delete Result:", imgDelData, imgDelError);
+
+        // 3. Delete property entry
+        const { data: propDelData, error: propDelError } = await window.supabaseClient
+          .from('properties')
+          .delete()
+          .eq('id', propertyId)
+          .select();
+
+        console.log("==========================================");
+        console.log("[Supabase Debug] Delete Response Data:", propDelData);
+        console.log("[Supabase Debug] Delete Response Error Object:", propDelError);
+        console.log("==========================================");
+
+        if (propDelError) {
+          console.error("[Supabase Delete Failure] Database returned error:", propDelError);
+          showToast(`Error deleting property record: ${propDelError.message}`, 'error');
+        } else {
+          showToast("Property deleted successfully.");
+        }
+      } catch (err) {
+        console.error("Cascading purge error exception:", err);
+        showToast("An error occurred while deleting the property.", 'error');
+      }
+
+      btn.disabled = false;
+      btn.textContent = originalText;
+
+      closeDeleteConfirmModal();
+      loadPropertiesRoster();
+      loadDashboardOverview();
+    }
+
+    // ----------------------------------------------------
+    // INQUIRIES MANAGER
+    // ----------------------------------------------------
+    async function loadInquiriesTracker() {
+      const tableBody = document.getElementById('admin-inquiries-table-body');
+      if (!tableBody || !window.supabaseClient) return;
+
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="5" style="text-align:center; padding:3rem 0;">
+            <div class="skeleton" style="width:30px; height:30px; border-radius:50%; display:inline-block;"></div>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin-top:0.5rem;">Loading inquiries...</p>
+          </td>
+        </tr>
+      `;
+
+      const { data, error } = await window.supabaseClient
+        .from('inquiries')
+        .select('*, properties(title)')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        showToast(`Failed to load inquiries: ${error.message}`, 'error');
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="5" style="text-align:center; padding:3rem 0; color:var(--status-cancelled);">
+              Error loading inquiries.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="5" style="text-align:center; padding:3rem 0; color:var(--text-muted);">
+              No inquiries found.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tableBody.innerHTML = '';
+      data.forEach(item => {
+        const date = item.created_at || new Date().toISOString();
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>
+            <div style="font-weight:600; color:var(--text-primary); font-family:var(--font-sans);">${item.name}</div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">${item.phone} <br> ${item.email}</div>
+          </td>
+          <td style="font-weight:600; color:var(--text-secondary);">${item.budget}</td>
+          <td style="font-size:0.85rem; max-width:250px; line-height:1.4;">${item.message}</td>
+          <td>${new Date(date).toLocaleDateString('en-IN', {day:'numeric', month:'short'})}</td>
+          <td>
+            <select class="inquiry-status-select status-pill ${item.status}" onchange="updateInquiryStatusState(${item.id}, this.value)">
+              <option value="pending" class="status-pill pending" ${item.status === 'pending' ? 'selected' : ''}>Pending</option>
+              <option value="accepted" class="status-pill accepted" ${item.status === 'accepted' ? 'selected' : ''}>Accepted</option>
+              <option value="completed" class="status-pill completed" ${item.status === 'completed' ? 'selected' : ''}>Completed</option>
+              <option value="cancelled" class="status-pill cancelled" ${item.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+            </select>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    // Update status logs dynamically in Supabase
+    async function updateInquiryStatusState(inquiryId, newStatus) {
+      if (!window.supabaseClient) return;
+
+      const { error } = await window.supabaseClient
+        .from('inquiries')
+        .update({ status: newStatus })
+        .eq('id', inquiryId);
+      
+      if (error) {
+        showToast(`Failed to update status: ${error.message}`, 'error');
+      } else {
+        showToast("Inquiry status updated.");
+        loadInquiriesTracker();
+      }
+    }
+
+    // ----------------------------------------------------
+    // OPERATIONAL DASHBOARD OVERVIEW ENGINE (LIVE DB)
+    // ----------------------------------------------------
+    async function loadDashboardOverview() {
+      if (!window.supabaseClient) return;
+
+      const client = window.supabaseClient;
+      const now = new Date();
+      const sevenDaysLater = new Date();
+      sevenDaysLater.setDate(now.getDate() + 7);
+
+      // 1. Fetch properties and inquiries in parallel
+      const [propsRes, inqsRes] = await Promise.all([
+        client.from('properties').select('*, property_images(*)').order('created_at', { ascending: false }),
+        client.from('inquiries').select('*, properties(title)').order('created_at', { ascending: false })
+      ]);
+
+      const properties = propsRes.data || [];
+      const inquiries = inqsRes.data || [];
+
+      // 2. Compute summary metrics
+      const totalProps = properties.length;
+      const activeListings = properties.length; // assuming all are active
+      const totalInqs = inquiries.length;
+
+      const upcomingAuctions = properties.filter(p => {
+        if (!p.auction_date) return false;
+        const aDate = new Date(p.auction_date);
+        return aDate >= now && aDate <= sevenDaysLater;
+      });
+      const upcomingCount = upcomingAuctions.length;
+
+      // Update summary cards DOM
+      const dTotalProps = document.getElementById('dash-total-properties');
+      const dActiveListings = document.getElementById('dash-active-listings');
+      const dTotalInqs = document.getElementById('dash-total-inquiries');
+      const dUpcomingAuctions = document.getElementById('dash-upcoming-auctions');
+
+      if (dTotalProps) dTotalProps.textContent = totalProps;
+      if (dActiveListings) dActiveListings.textContent = activeListings;
+      if (dTotalInqs) dTotalInqs.textContent = totalInqs;
+      if (dUpcomingAuctions) dUpcomingAuctions.textContent = upcomingCount;
+
+      // 3. Render Recent Inquiries (Latest 5)
+      const recentInqBody = document.getElementById('dash-recent-inquiries-body');
+      if (recentInqBody) {
+        if (inquiries.length === 0) {
+          recentInqBody.innerHTML = `
+            <tr>
+              <td colspan="4" style="text-align:center; padding:2rem 0; color:var(--text-muted);">
+                No inquiries found.
+              </td>
+            </tr>
+          `;
+        } else {
+          recentInqBody.innerHTML = '';
+          inquiries.slice(0, 5).forEach(item => {
+            const date = item.created_at || new Date().toISOString();
+            const dateFormatted = new Date(date).toLocaleDateString('en-IN', {day:'numeric', month:'short'});
+            const statusClass = item.status || 'pending';
+            const statusText = statusClass.charAt(0).toUpperCase() + statusClass.slice(1);
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>
+                <div style="font-weight:600; color:var(--text-primary); font-size:0.85rem;">${item.name}</div>
+                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">${item.phone}</div>
+              </td>
+              <td style="font-weight:600; color:var(--text-secondary); font-size:0.85rem;">${item.budget}</td>
+              <td style="font-size:0.8rem; color:var(--text-muted);">${dateFormatted}</td>
+              <td>
+                <span class="status-pill ${statusClass}" style="font-size:0.75rem; padding:0.2rem 0.5rem; display:inline-block;">${statusText}</span>
+              </td>
+            `;
+            recentInqBody.appendChild(row);
+          });
+        }
+      }
+
+      // 4. Render Upcoming Auctions within next 7 days
+      const upcomingList = document.getElementById('dash-upcoming-auctions-list');
+      if (upcomingList) {
+        const sortedUpcoming = upcomingAuctions.sort((a, b) => new Date(a.auction_date) - new Date(b.auction_date));
+        if (sortedUpcoming.length === 0) {
+          upcomingList.innerHTML = `
+            <div style="text-align:center; padding:2.5rem 0; color:var(--text-muted); font-size:0.85rem;">
+              No upcoming auctions within 7 days.
+            </div>
+          `;
+        } else {
+          upcomingList.innerHTML = '';
+          sortedUpcoming.forEach(item => {
+            const aDate = new Date(item.auction_date);
+            const rawPrice = item.price || item.reservation_price || 0;
+            const priceFormatted = `₹${(rawPrice / 10000000).toFixed(1)} Cr`;
+            
+            // Check if auction is within 2 days to highlight as urgent
+            const diffTime = Math.abs(aDate - now);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const isUrgent = diffDays <= 2;
+            const urgencyClass = isUrgent ? 'dash-auction-item urgent' : 'dash-auction-item';
+            const urgencyBadge = isUrgent ? '<span style="color:var(--status-cancelled); font-size:0.7rem; font-weight:600;">🔥 URGENT</span>' : '';
+
+            const div = document.createElement('div');
+            div.className = urgencyClass;
+            div.innerHTML = `
+              <div style="display:flex; flex-direction:column; gap:0.2rem; max-width:65%;">
+                <span style="font-weight:600; font-family:var(--font-serif); font-size:0.85rem; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${item.title}">${item.title}</span>
+                <span style="font-size:0.7rem; color:var(--text-muted);">${item.city} • ${urgencyBadge || 'Upcoming'}</span>
+              </div>
+              <div style="text-align:right; display:flex; flex-direction:column; gap:0.15rem;">
+                <span style="font-size:0.75rem; color:var(--gold-primary); font-weight:600;">${aDate.toLocaleDateString('en-IN', {day:'numeric', month:'short'})}</span>
+                <span style="font-size:0.8rem; color:var(--text-secondary); font-family:var(--font-serif); font-weight:500;">${priceFormatted}</span>
+              </div>
+            `;
+            upcomingList.appendChild(div);
+          });
+        }
+      }
+
+      // 5. Render Recently Added Properties (Latest 5)
+      const recentPropsList = document.getElementById('dash-recent-properties-list');
+      if (recentPropsList) {
+        if (properties.length === 0) {
+          recentPropsList.innerHTML = `
+            <div style="grid-column: span 5; text-align:center; padding:3rem 0; color:var(--text-muted); font-size:0.85rem;">
+              No properties added yet.
+            </div>
+          `;
+        } else {
+          recentPropsList.innerHTML = '';
+          properties.slice(0, 5).forEach(item => {
+            const images = item.property_images && item.property_images.length > 0
+              ? item.property_images.map(img => img.image_url)
+              : ["https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80"];
+
+            const rawPrice = item.price || item.reservation_price || 0;
+            const priceFormatted = `₹${(rawPrice / 10000000).toFixed(1)} Cr`;
+            const featBadge = item.is_featured ? '<span class="badge-featured-mini">Featured</span>' : '';
+
+            const card = document.createElement('div');
+            card.className = 'dash-property-card';
+            card.innerHTML = `
+              <img src="${images[0]}" alt="${item.title}" class="dash-property-thumb" />
+              ${featBadge}
+              <div class="dash-property-info">
+                <span class="dash-property-title" title="${item.title}">${item.title}</span>
+                <span class="dash-property-meta">${item.city}</span>
+                <span class="dash-property-price">${priceFormatted}</span>
+              </div>
+            `;
+            recentPropsList.appendChild(card);
+          });
+        }
+      }
+    }
+
+    // Explicitly bind handlers to the window object to guarantee global accessibility for inline onclick bindings
+    window.editPropertyRoster = editPropertyRoster;
+    window.confirmDeleteProperty = confirmDeleteProperty;
+    window.deletePropertyRoster = deletePropertyRoster;
+    window.closeDeleteConfirmModal = closeDeleteConfirmModal;
+    window.updateInquiryStatusState = updateInquiryStatusState;
+    window.closePropertyFormModal = closePropertyFormModal;
+    window.openPropertyFormModal = openPropertyFormModal;
+    window.loadDashboardOverview = loadDashboardOverview;
+    window.switchDashboardTab = switchDashboardTab;
+
+    // Initial triggers on load
+    window.addEventListener('load', () => {
+      loadDashboardOverview();
+      loadPropertiesRoster();
+      loadInquiriesTracker();
+    });
+  </script>
+</body>
+</html>
