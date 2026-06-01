@@ -452,12 +452,12 @@
 
           <!-- File Upload simulated dropzone -->
           <div class="form-group">
-            <label>Upload Images</label>
+            <label>Upload Media (Photos & Videos)</label>
             <div class="file-dropzone" onclick="document.getElementById('form-image-input').click()">
-              <input type="file" id="form-image-input" multiple style="display:none;" onchange="handleMultipleImagesSelect(event)" />
-              <div class="file-dropzone-icon">📷</div>
-              <div class="file-dropzone-text" id="form-dropzone-text-label">Click to select images</div>
-              <div class="file-dropzone-subtext">Images will be uploaded to Supabase Storage.</div>
+              <input type="file" id="form-image-input" multiple accept="image/*,video/*" style="display:none;" onchange="handleMultipleImagesSelect(event)" />
+              <div class="file-dropzone-icon">🎥</div>
+              <div class="file-dropzone-text" id="form-dropzone-text-label">Click to select photos & videos</div>
+              <div class="file-dropzone-subtext">Media files will be uploaded to Supabase Storage.</div>
             </div>
           </div>
 
@@ -619,7 +619,7 @@
       selectedUploadFiles = Array.from(event.target.files);
       const textLabel = document.getElementById('form-dropzone-text-label');
       if (textLabel) {
-        textLabel.textContent = `${selectedUploadFiles.length} image(s) selected. Ready for upload.`;
+        textLabel.textContent = `${selectedUploadFiles.length} file(s) selected. Ready for upload.`;
         textLabel.style.color = "var(--gold-hover)";
       }
     }
@@ -633,7 +633,7 @@
       
       for (const file of files) {
         if (progressCallback) {
-          progressCallback(`Uploading image ${index} of ${files.length}...`);
+          progressCallback(`Uploading file ${index} of ${files.length}...`);
         }
         
         const fileExt = file.name.split('.').pop();
@@ -725,10 +725,15 @@
         const pBHK = item.bedrooms || item.bhk_configuration || 1;
 
         const row = document.createElement('tr');
+        const isVid0 = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'm4v'].includes(images[0].split('?')[0].split('.').pop().toLowerCase());
         row.innerHTML = `
           <td>
             <div class="table-property-cell">
-              <img src="${images[0]}" alt="${pName}" class="table-property-thumb" />
+              ${isVid0 ? `
+                <video src="${images[0]}" class="table-property-thumb" style="object-fit:cover; background:#000;" muted playsinline></video>
+              ` : `
+                <img src="${images[0]}" alt="${pName}" class="table-property-thumb" />
+              `}
               <span class="table-property-title">${pName}</span>
             </div>
           </td>
@@ -759,7 +764,7 @@
       document.getElementById('form-property-id').value = '';
       selectedUploadFiles = [];
       if (textLabel) {
-        textLabel.textContent = "Click to select images for upload";
+        textLabel.textContent = "Click to select photos & videos for upload";
         textLabel.style.color = "var(--text-secondary)";
       }
       
@@ -1334,8 +1339,13 @@
 
             const card = document.createElement('div');
             card.className = 'dash-property-card';
+            const isVidD = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'm4v'].includes(images[0].split('?')[0].split('.').pop().toLowerCase());
             card.innerHTML = `
-              <img src="${images[0]}" alt="${item.title}" class="dash-property-thumb" />
+              ${isVidD ? `
+                <video src="${images[0]}" class="dash-property-thumb" style="object-fit:cover; background:#000;" muted playsinline></video>
+              ` : `
+                <img src="${images[0]}" alt="${item.title}" class="dash-property-thumb" />
+              `}
               ${featBadge}
               <div class="dash-property-info">
                 <span class="dash-property-title" title="${item.title}">${item.title}</span>
