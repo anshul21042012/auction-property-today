@@ -35,8 +35,8 @@
             <ul class="footer-links">
               <li><a href="index.html">Home</a></li>
               <li><a href="listings.html">Properties</a></li>
-              <li><a href="about.html">About Us</a></li>
-              <li><a href="contact.html">Contact</a></li>
+              <li><a href="index.html#about">About Us</a></li>
+              <li><a href="index.html#contact">Contact</a></li>
               <li><a href="admin.html">Admin Dashboard</a></li>
             </ul>
           </div>
