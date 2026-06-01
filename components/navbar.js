@@ -21,13 +21,15 @@
 
     const isHome = page === "index.html" || page === "";
     const isListings = page === "listings.html";
-    const isAbout = page === "about.html";
-    const isContact = page === "contact.html";
+    const isLoans = page === "loans.html";
+    const isLegal = page === "legal.html";
     const isAdmin = page === "admin.html";
 
-    // Setup dynamic paths for core pillars anchors
-    const loansLink = isHome ? "#loans" : "index.html#loans";
-    const legalLink = isHome ? "#legal-vetting" : "index.html#legal-vetting";
+    // Setup dynamic paths for core pillars and merged home anchors
+    const loansLink = "loans.html";
+    const legalLink = "legal.html";
+    const aboutLink = isHome ? "#about" : "index.html#about";
+    const contactLink = isHome ? "#contact" : "index.html#contact";
 
     header.innerHTML = `
       <div class="container navbar-container">
@@ -42,10 +44,10 @@
           <ul class="navbar-links">
             <li><a href="index.html" class="nav-link ${isHome ? 'active' : ''}">Home</a></li>
             <li><a href="listings.html" class="nav-link ${isListings ? 'active' : ''}">Properties</a></li>
-            <li><a href="${loansLink}" class="nav-link">Auction Loans</a></li>
-            <li><a href="${legalLink}" class="nav-link">Legal Vetting (XYZ)</a></li>
-            <li><a href="about.html" class="nav-link ${isAbout ? 'active' : ''}">About Us</a></li>
-            <li><a href="contact.html" class="nav-link ${isContact ? 'active' : ''}">Contact</a></li>
+            <li><a href="${loansLink}" class="nav-link ${isLoans ? 'active' : ''}">Auction Loans</a></li>
+            <li><a href="${legalLink}" class="nav-link ${isLegal ? 'active' : ''}">Legal Vetting (XYZ)</a></li>
+            <li><a href="${aboutLink}" class="nav-link">About Us</a></li>
+            <li><a href="${contactLink}" class="nav-link">Contact</a></li>
             <li><a href="admin.html" class="nav-link ${isAdmin ? 'active' : ''}">Admin Dashboard</a></li>
           </ul>
         </nav>
@@ -94,10 +96,10 @@
       <ul class="mobile-nav-links">
         <li><a href="index.html" class="nav-link ${isHome ? 'active' : ''}">Home</a></li>
         <li><a href="listings.html" class="nav-link ${isListings ? 'active' : ''}">Properties</a></li>
-        <li><a href="${loansLink}" class="nav-link">Auction Loans</a></li>
-        <li><a href="${legalLink}" class="nav-link">Legal Vetting (XYZ)</a></li>
-        <li><a href="about.html" class="nav-link ${isAbout ? 'active' : ''}">About Us</a></li>
-        <li><a href="contact.html" class="nav-link ${isContact ? 'active' : ''}">Contact</a></li>
+        <li><a href="${loansLink}" class="nav-link ${isLoans ? 'active' : ''}">Auction Loans</a></li>
+        <li><a href="${legalLink}" class="nav-link ${isLegal ? 'active' : ''}">Legal Vetting (XYZ)</a></li>
+        <li><a href="${aboutLink}" class="nav-link">About Us</a></li>
+        <li><a href="${contactLink}" class="nav-link">Contact</a></li>
         <li><a href="admin.html" class="nav-link ${isAdmin ? 'active' : ''}">Admin Dashboard</a></li>
         <li><a href="login.html" class="nav-link" style="color:var(--gold-primary);">Sign In</a></li>
       </ul>
