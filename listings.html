@@ -10,15 +10,46 @@
   <link rel="stylesheet" href="styles/components.css">
   <link rel="stylesheet" href="styles/pages.css">
 
-  <!-- Immediate Theme Lock -->
+  <!-- Immediate Theme Lock & Route Guard -->
   <script>
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
+
+    const isAdmin = localStorage.getItem('isAdmin') === 'true';
+    const clientSession = JSON.parse(localStorage.getItem('clientSession') || '{}');
+    if (!isAdmin && (!clientSession || !clientSession.authenticated)) {
+      window.location.replace("login.html");
+    }
   </script>
 
   <!-- Supabase Live Ingress -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="services/supabaseClient.js"></script>
+
+  <!-- Full-Width 3-Column Catalog Styles Override -->
+  <style>
+    .listings-layout {
+      grid-template-columns: 1fr !important;
+      padding: 3rem 0 6rem 0 !important;
+    }
+    .listings-grid {
+      grid-template-columns: repeat(3, 1fr) !important;
+      gap: 2rem !important;
+    }
+    @media (max-width: 1200px) {
+      .listings-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+    }
+    @media (max-width: 768px) {
+      .listings-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .listings-layout {
+        padding: 2rem 0 4rem 0 !important;
+      }
+    }
+  </style>
 </head>
 <body>
 
@@ -27,88 +58,13 @@
     <div class="container">
       <span class="apple-subtitle">Curated Properties</span>
       <h1 class="luxury-heading" style="font-size:3rem; margin-bottom:0.5rem;">Property Auctions</h1>
-      <p style="color:var(--text-secondary); max-width:600px;">Filter and bid on verified properties across India.</p>
+      <p style="color:var(--text-secondary); max-width:600px;">Explore verified high-value luxury real estate auctions across India.</p>
     </div>
   </section>
 
   <!-- Core Content & Listings Layout -->
   <main class="container">
     <div class="listings-layout">
-      
-      <!-- Side Navigation Filter Panels -->
-      <aside class="filters-sidebar glassmorphism">
-        <div class="filters-header">
-          <h3>Filters</h3>
-          <button class="filters-clear-btn" id="btn-clear-filters">Reset All</button>
-        </div>
-        
-        <form id="listings-filter-form" onsubmit="event.preventDefault(); applyCatalogFilters();">
-          
-          <!-- Search field -->
-          <div class="filter-group">
-            <label for="filter-search">Search</label>
-            <input type="text" id="filter-search" class="filter-input" placeholder="Keyword search..." />
-          </div>
-
-          <!-- City Dropdown -->
-          <div class="filter-group">
-            <label for="filter-city">City</label>
-            <select id="filter-city" class="filter-input">
-              <option value="all">All Cities</option>
-              <option value="New Delhi">New Delhi</option>
-              <option value="Mumbai">Mumbai</option>
-              <option value="Bangalore">Bangalore</option>
-              <option value="Goa">Goa</option>
-              <option value="Ooty">Ooty</option>
-              <option value="Kolkata">Kolkata</option>
-            </select>
-          </div>
-
-          <!-- Property Classification -->
-          <div class="filter-group">
-            <label for="filter-type">Property Type</label>
-            <select id="filter-type" class="filter-input">
-              <option value="all">All Types</option>
-              <option value="Villa">Luxury Villa</option>
-              <option value="Penthouse">Sea Penthouse</option>
-              <option value="Bungalow">Lutyens' Bungalow</option>
-              <option value="Heritage Estate">Heritage Manor</option>
-            </select>
-          </div>
-
-          <!-- Bedrooms configuration -->
-          <div class="filter-group">
-            <label for="filter-bedrooms">Bedrooms</label>
-            <select id="filter-bedrooms" class="filter-input">
-              <option value="all">Any Bedrooms</option>
-              <option value="4">4 BHK</option>
-              <option value="5">5 BHK</option>
-              <option value="6">6 BHK</option>
-              <option value="8">8 BHK</option>
-            </select>
-          </div>
-
-          <!-- Price constraints (Crores) -->
-          <div class="filter-group">
-            <label>Price (₹ Crores)</label>
-            <div style="display:flex; gap:0.5rem;">
-              <input type="number" id="filter-min-price" class="filter-input" placeholder="Min" min="0" step="1" />
-              <input type="number" id="filter-max-price" class="filter-input" placeholder="Max" min="0" step="1" />
-            </div>
-          </div>
-
-          <!-- Square Feet boundaries -->
-          <div class="filter-group">
-            <label>Area (sq ft)</label>
-            <div style="display:flex; gap:0.5rem;">
-              <input type="number" id="filter-min-area" class="filter-input" placeholder="Min" min="0" />
-              <input type="number" id="filter-max-area" class="filter-input" placeholder="Max" min="0" />
-            </div>
-          </div>
-
-          <button type="submit" class="btn-luxury" style="width:100%; border-radius:4px; font-size:0.85rem; padding:0.8rem 1rem;">APPLY FILTERS</button>
-        </form>
-      </aside>
 
       <!-- Properties Grid & Content Panel -->
       <section class="grid-listings-col">
@@ -147,19 +103,26 @@
 
   <!-- Page Interactivity Scripts -->
   <script>
-    // Extract query parameters from URL and pre-populate forms
+    // Global filter parameters, initially loaded from URL query params
+    let filterState = {
+      search: '',
+      city: 'all',
+      type: 'all',
+      bedrooms: 'all',
+      minPrice: '',
+      maxPrice: '',
+      minArea: '',
+      maxArea: ''
+    };
+
+    // Extract query parameters from URL
     function loadUrlQueryParams() {
       const params = new URLSearchParams(window.location.search);
       
-      const city = params.get('city');
-      const type = params.get('type');
-      const bhk = params.get('bhk');
-      const search = params.get('search');
-
-      if (city && city !== 'all') document.getElementById('filter-city').value = city;
-      if (type && type !== 'all') document.getElementById('filter-type').value = type;
-      if (bhk && bhk !== 'all') document.getElementById('filter-bedrooms').value = bhk;
-      if (search) document.getElementById('filter-search').value = search;
+      filterState.city = params.get('city') || 'all';
+      filterState.type = params.get('type') || 'all';
+      filterState.bedrooms = params.get('bhk') || 'all';
+      filterState.search = params.get('search') || '';
     }
 
     // Apply filters and query Supabase database
@@ -169,8 +132,8 @@
       
       if (!grid || !window.supabaseClient) return;
 
-      // 1. Trigger shimmer skeleton loaders across 4 cards
-      grid.innerHTML = Array(4).fill(0).map(() => `
+      // 1. Trigger shimmer skeleton loaders across 6 cards (3 per row)
+      grid.innerHTML = Array(6).fill(0).map(() => `
         <div class="property-card" style="pointer-events:none;">
           <div class="card-media skeleton"></div>
           <div class="card-content" style="gap:0.75rem;">
@@ -188,15 +151,8 @@
 
       countLabel.textContent = "Loading properties...";
 
-      // 2. Fetch parameters from filter form
-      const search = document.getElementById('filter-search').value;
-      const city = document.getElementById('filter-city').value;
-      const type = document.getElementById('filter-type').value;
-      const bedrooms = document.getElementById('filter-bedrooms').value;
-      const minPrice = document.getElementById('filter-min-price').value;
-      const maxPrice = document.getElementById('filter-max-price').value;
-      const minArea = document.getElementById('filter-min-area').value;
-      const maxArea = document.getElementById('filter-max-area').value;
+      // 2. Fetch parameters from state
+      const { search, city, type, bedrooms, minPrice, maxPrice, minArea, maxArea } = filterState;
 
       // 3. Build live Supabase query
       let query = window.supabaseClient.from('properties').select('*, property_images(*)');
@@ -225,11 +181,11 @@
         // Render empty state
         countLabel.textContent = "0 Properties";
         grid.innerHTML = `
-          <div style="grid-column: span 2; padding: 5rem 2rem;" class="empty-state glassmorphism">
+          <div style="grid-column: span 3; padding: 5rem 2rem;" class="empty-state glassmorphism">
             <div class="empty-icon">🔍</div>
             <h3>No Properties Found</h3>
-            <p style="color:var(--text-secondary); max-width:400px; margin: 0.5rem auto 2rem auto;">No properties match your search criteria.</p>
-            <button class="btn-luxury" onclick="resetAllCatalogFilters()">Reset Filters</button>
+            <p style="color:var(--text-secondary); max-width:400px; margin: 0.5rem auto 2rem auto;">No properties match the search criteria.</p>
+            <button class="btn-luxury" onclick="resetAllCatalogFilters()">Show All Properties</button>
           </div>
         `;
         return;
@@ -252,11 +208,11 @@
       if (results.length === 0) {
         countLabel.textContent = "0 Properties";
         grid.innerHTML = `
-          <div style="grid-column: span 2; padding: 5rem 2rem;" class="empty-state glassmorphism">
+          <div style="grid-column: span 3; padding: 5rem 2rem;" class="empty-state glassmorphism">
             <div class="empty-icon">🔍</div>
             <h3>No Properties Found</h3>
             <p style="color:var(--text-secondary); max-width:400px; margin: 0.5rem auto 2rem auto;">No properties matched "${search}".</p>
-            <button class="btn-luxury" onclick="resetAllCatalogFilters()">Reset Filters</button>
+            <button class="btn-luxury" onclick="resetAllCatalogFilters()">Show All Properties</button>
           </div>
         `;
         return;
@@ -369,17 +325,25 @@
       });
     }
 
-    // Reset filters handler
+    // Reset filters handler (reloads full properties view)
     function resetAllCatalogFilters() {
-      document.getElementById('listings-filter-form').reset();
-      document.getElementById('filter-search').value = '';
-      document.getElementById('filter-city').value = 'all';
-      document.getElementById('filter-type').value = 'all';
-      document.getElementById('filter-bedrooms').value = 'all';
-      document.getElementById('filter-min-price').value = '';
-      document.getElementById('filter-max-price').value = '';
-      document.getElementById('filter-min-area').value = '';
-      document.getElementById('filter-max-area').value = '';
+      // Clear filters in state
+      filterState = {
+        search: '',
+        city: 'all',
+        type: 'all',
+        bedrooms: 'all',
+        minPrice: '',
+        maxPrice: '',
+        minArea: '',
+        maxArea: ''
+      };
+      
+      // Clean URL params quietly without reloading
+      const url = new URL(window.location);
+      url.search = '';
+      window.history.pushState({}, '', url);
+
       applyCatalogFilters();
     }
 
@@ -387,9 +351,6 @@
     window.addEventListener('DOMContentLoaded', () => {
       loadUrlQueryParams();
       applyCatalogFilters();
-
-      const clearBtn = document.getElementById('btn-clear-filters');
-      if (clearBtn) clearBtn.addEventListener('click', resetAllCatalogFilters);
     });
   </script>
 </body>

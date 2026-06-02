@@ -22,14 +22,26 @@
     const isHome = page === "index.html" || page === "";
     const isListings = page === "listings.html";
     const isLoans = page === "loans.html";
-    const isLegal = page === "legal.html";
+    const isInsurance = page === "insurance.html";
     const isAdmin = page === "admin.html";
 
     // Setup dynamic paths for core pillars and merged home anchors
     const loansLink = "loans.html";
-    const legalLink = "legal.html";
+    const insuranceLink = "insurance.html";
     const aboutLink = isHome ? "#about" : "index.html#about";
     const contactLink = isHome ? "#contact" : "index.html#contact";
+
+    // Dynamic session checking
+    const isClientLoggedIn = JSON.parse(localStorage.getItem('clientSession') || '{}').authenticated === true;
+    const isAdminLoggedIn = localStorage.getItem('isAdmin') === 'true' && localStorage.getItem('sb-xqhrjhvbustdwmrmikya-auth-token') !== null;
+    
+    const loginBtnHTML = (isClientLoggedIn || isAdminLoggedIn) 
+      ? `<a href="#" class="nav-btn-login" id="nav-logout-btn" style="border-color:var(--status-cancelled); color:var(--status-cancelled);">Logout</a>`
+      : `<a href="login.html" class="nav-btn-login">Login</a>`;
+
+    const loginMobileHTML = (isClientLoggedIn || isAdminLoggedIn)
+      ? `<li><a href="#" class="nav-link" id="mobile-logout-btn" style="color:var(--status-cancelled);">Sign Out</a></li>`
+      : `<li><a href="login.html" class="nav-link" style="color:var(--gold-primary);">Sign In</a></li>`;
 
     header.innerHTML = `
       <div class="container navbar-container">
@@ -44,8 +56,8 @@
           <ul class="navbar-links">
             <li><a href="index.html" class="nav-link ${isHome ? 'active' : ''}">Home</a></li>
             <li><a href="listings.html" class="nav-link ${isListings ? 'active' : ''}">Properties</a></li>
-            <li><a href="${loansLink}" class="nav-link ${isLoans ? 'active' : ''}">Auction Loans</a></li>
-            <li><a href="${legalLink}" class="nav-link ${isLegal ? 'active' : ''}">Legal Vetting (XYZ)</a></li>
+            <li><a href="${loansLink}" class="nav-link ${isLoans ? 'active' : ''}">Loans</a></li>
+            <li><a href="${insuranceLink}" class="nav-link ${isInsurance ? 'active' : ''}">Insurance</a></li>
             <li><a href="${aboutLink}" class="nav-link">About Us</a></li>
             <li><a href="${contactLink}" class="nav-link">Contact</a></li>
             <li><a href="admin.html" class="nav-link ${isAdmin ? 'active' : ''}">Admin Dashboard</a></li>
@@ -65,7 +77,7 @@
           </button>
           
           <!-- Logged out Admin / Login link -->
-          <a href="login.html" class="nav-btn-login">Login</a>
+          ${loginBtnHTML}
           
           <!-- Hamburger Menu button -->
           <button class="nav-btn hamburger-btn" id="nav-drawer-trigger" title="Open Menu">
@@ -96,12 +108,12 @@
       <ul class="mobile-nav-links">
         <li><a href="index.html" class="nav-link ${isHome ? 'active' : ''}">Home</a></li>
         <li><a href="listings.html" class="nav-link ${isListings ? 'active' : ''}">Properties</a></li>
-        <li><a href="${loansLink}" class="nav-link ${isLoans ? 'active' : ''}">Auction Loans</a></li>
-        <li><a href="${legalLink}" class="nav-link ${isLegal ? 'active' : ''}">Legal Vetting (XYZ)</a></li>
+        <li><a href="${loansLink}" class="nav-link ${isLoans ? 'active' : ''}">Loans</a></li>
+        <li><a href="${insuranceLink}" class="nav-link ${isInsurance ? 'active' : ''}">Insurance</a></li>
         <li><a href="${aboutLink}" class="nav-link">About Us</a></li>
         <li><a href="${contactLink}" class="nav-link">Contact</a></li>
         <li><a href="admin.html" class="nav-link ${isAdmin ? 'active' : ''}">Admin Dashboard</a></li>
-        <li><a href="login.html" class="nav-link" style="color:var(--gold-primary);">Sign In</a></li>
+        ${loginMobileHTML}
       </ul>
     `;
     document.body.appendChild(drawer);
@@ -317,5 +329,25 @@
         }
       });
     }
+    // Dynamic Logout Listeners
+    const logoutBtn = document.getElementById('nav-logout-btn');
+    const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
+
+    async function handleLogout(e) {
+      e.preventDefault();
+      const confirmLogout = confirm("Are you sure you want to sign out?");
+      if (!confirmLogout) return;
+
+      if (window.supabaseClient) {
+        await window.supabaseClient.auth.signOut();
+      }
+      localStorage.removeItem("sb-xqhrjhvbustdwmrmikya-auth-token");
+      localStorage.removeItem("isAdmin");
+      localStorage.removeItem("clientSession");
+      window.location.replace("login.html");
+    }
+
+    if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+    if (mobileLogoutBtn) mobileLogoutBtn.addEventListener('click', handleLogout);
   }
 })();

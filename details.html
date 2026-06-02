@@ -10,10 +10,16 @@
   <link rel="stylesheet" href="styles/components.css">
   <link rel="stylesheet" href="styles/pages.css">
 
-  <!-- Immediate Theme Lock -->
+  <!-- Immediate Theme Lock & Route Guard -->
   <script>
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
+
+    const isAdmin = localStorage.getItem('isAdmin') === 'true';
+    const clientSession = JSON.parse(localStorage.getItem('clientSession') || '{}');
+    if (!isAdmin && (!clientSession || !clientSession.authenticated)) {
+      window.location.replace("login.html");
+    }
   </script>
 
   <!-- Supabase Live Ingress -->

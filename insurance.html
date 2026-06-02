@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bespoke Health, Life & Asset Insurance | AuctionPropertyToday</title>
+  <meta name="description" content="Access bespoke high-limit Health Insurance, Term Life Insurance, and Luxury Asset Protection underwritten by India's primary financial carrier boards.">
+  
+  <!-- Critical Stylesheets -->
+  <link rel="stylesheet" href="styles/index.css">
+  <link rel="stylesheet" href="styles/components.css">
+  <link rel="stylesheet" href="styles/pages.css">
+
+  <!-- Immediate Theme Lock -->
+  <script>
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  </script>
+
+  <!-- Supabase Live Ingress -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="services/supabaseClient.js"></script>
+
+  <!-- Premium Scoped CSS for Insurance Portal -->
+  <style>
+    .insurance-hero {
+      padding: 10rem 0 6rem 0;
+      background: radial-gradient(circle at top right, rgba(212, 175, 55, 0.05) 0%, rgba(7, 7, 8, 0) 60%);
+      border-bottom: 1px solid var(--border-color);
+      text-align: center;
+    }
+    
+    .tab-nav {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 3.5rem;
+      flex-wrap: wrap;
+    }
+    
+    .tab-btn {
+      padding: 0.85rem 2.25rem;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 30px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 0.95rem;
+      letter-spacing: 0.03em;
+      transition: var(--transition-smooth);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    
+    .tab-btn.active {
+      background: var(--gold-gradient);
+      color: #070708 !important;
+      border-color: var(--gold-primary);
+      box-shadow: 0 4px 20px var(--gold-glow);
+      font-weight: 600;
+    }
+    
+    .tab-btn:hover:not(.active) {
+      border-color: var(--gold-primary);
+      color: var(--text-primary);
+      transform: translateY(-1px);
+    }
+    
+    .calculator-grid {
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 3rem;
+      margin-bottom: 5rem;
+      align-items: stretch;
+    }
+    
+    @media (max-width: 992px) {
+      .calculator-grid {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+      }
+    }
+    
+    .calculator-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 3rem;
+      box-shadow: 0 20px 45px var(--glass-shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 2.25rem;
+    }
+
+    .slider-group {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .slider-label {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      font-weight: 600;
+    }
+    
+    .slider-val-container {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .slider-val-prefix {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--gold-primary);
+      font-family: var(--font-serif);
+    }
+
+    .slider-input-text {
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-primary);
+      padding: 0.4rem 0.75rem;
+      width: 150px;
+      text-align: right;
+      font-weight: 600;
+      font-family: var(--font-serif);
+      font-size: 1.15rem;
+      transition: var(--transition-fast);
+    }
+    
+    .slider-input-text:focus {
+      border-color: var(--gold-primary);
+      box-shadow: 0 0 8px var(--gold-glow);
+    }
+    
+    .range-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--bg-color);
+      outline: none;
+      border: 1px solid var(--border-color);
+      transition: background 0.3s;
+    }
+    
+    .range-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--gold-gradient);
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--gold-glow);
+      transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+      border: none;
+    }
+    
+    .range-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+    
+    .slider-hints {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: -0.25rem;
+    }
+
+    .results-card {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-color-gold);
+      border-radius: 12px;
+      padding: 3rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 20px 45px var(--glass-shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .results-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 150px;
+      height: 150px;
+      background: radial-gradient(circle, rgba(212, 175, 55, 0.06) 0%, rgba(212, 175, 55, 0) 70%);
+      pointer-events: none;
+    }
+    
+    .result-row {
+      border-bottom: 1px solid var(--border-color);
+      padding: 1.5rem 0;
+    }
+    
+    .result-row:first-child {
+      padding-top: 0;
+    }
+    
+    .result-row:last-of-type {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    
+    .result-label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.35rem;
+      font-weight: 500;
+    }
+    
+    .result-value {
+      font-family: var(--font-serif);
+      font-size: 2.2rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+    
+    .result-value.gold {
+      color: var(--gold-primary);
+      background: var(--gold-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .split-bar-wrapper {
+      margin: 1.5rem 0 0.5rem 0;
+    }
+
+    .split-bar {
+      display: flex;
+      height: 12px;
+      border-radius: 6px;
+      overflow: hidden;
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+    }
+    
+    #bar-insured {
+      background: var(--gold-gradient);
+      width: 100%;
+      transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    #bar-deductible {
+      background: #503f16;
+      width: 0%;
+      transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    .split-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+    }
+    
+    .split-dot-i {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: var(--gold-primary);
+      border-radius: 50%;
+      margin-right: 0.35rem;
+    }
+
+    .split-dot-d {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #503f16;
+      border-radius: 50%;
+      margin-right: 0.35rem;
+    }
+
+    /* Eligibility Checker Styling */
+    .eligibility-container {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 3.5rem;
+      margin-bottom: 5rem;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    }
+    
+    .eligibility-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+    
+    @media (max-width: 992px) {
+      .eligibility-grid {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+      }
+    }
+    
+    .eligibility-result-box {
+      background: var(--bg-color);
+      border: 1px solid var(--border-color-gold);
+      border-radius: 12px;
+      padding: 3rem 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      min-height: 280px;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    .eligibility-amount {
+      font-family: var(--font-serif);
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--gold-primary);
+      background: var(--gold-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 1rem 0;
+      line-height: 1.1;
+    }
+
+    /* Underwriters Comparison Table */
+    .matrix-section {
+      margin-bottom: 5rem;
+    }
+
+    .matrix-table-container {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      background: var(--bg-surface);
+    }
+    
+    .matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      min-width: 800px;
+    }
+    
+    .matrix-table th {
+      background: var(--bg-surface-elevated);
+      padding: 1.5rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-color);
+      font-weight: 600;
+    }
+    
+    .matrix-table td {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.95rem;
+      vertical-align: middle;
+    }
+    
+    .matrix-table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .matrix-table tr {
+      transition: background-color 0.2s ease;
+    }
+
+    .matrix-table tr:hover {
+      background: rgba(255, 255, 255, 0.015);
+    }
+    
+    .bank-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .bank-logo-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-color);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold-primary);
+      font-family: var(--font-serif);
+      font-weight: bold;
+      font-size: 0.85rem;
+    }
+
+    .bank-name {
+      font-family: var(--font-serif);
+      font-weight: 600;
+      font-size: 1.15rem;
+      color: var(--text-primary);
+    }
+    
+    .btn-apply-small {
+      padding: 0.5rem 1.25rem;
+      font-size: 0.8rem;
+      border-radius: 4px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Accordion FAQ Styling */
+    .faq-container {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .faq-item {
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--bg-surface);
+      overflow: hidden;
+      transition: var(--transition-smooth);
+    }
+
+    .faq-item.active {
+      border-color: var(--border-color-gold);
+      box-shadow: 0 5px 15px rgba(212,175,55,0.05);
+    }
+
+    .faq-question {
+      width: 100%;
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-align: left;
+      font-family: var(--font-serif);
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      transition: color 0.2s ease;
+    }
+
+    .faq-item:hover .faq-question {
+      color: var(--gold-primary);
+    }
+
+    .faq-icon {
+      font-size: 1.5rem;
+      color: var(--text-muted);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .faq-item.active .faq-icon {
+      transform: rotate(45deg);
+      color: var(--gold-primary);
+    }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), padding 0.4s ease;
+      padding: 0 2rem;
+    }
+
+    .faq-item.active .faq-answer {
+      max-height: 300px;
+      padding: 0 2rem 2rem 2rem;
+      border-top: 1px solid var(--border-color);
+      padding-top: 1.5rem;
+    }
+
+    .faq-answer p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Bespoke Hero Header -->
+  <section class="insurance-hero">
+    <div class="container" style="display:flex; flex-direction:column; align-items:center; text-align:center;">
+      <span class="apple-subtitle">Bespoke Protection & Institutional Coverage Portfolios</span>
+      <h1 style="margin-bottom:1.5rem; font-size: 3.5rem;">Elite Health, Life & Asset Insurance</h1>
+      <p style="margin-bottom:2.5rem; max-width:650px; color: var(--text-secondary); font-size: 1.15rem; line-height: 1.6;">
+        Secure institutional risk-insulation portfolios underwritten by India's primary carrier boards. Estimate premium rates, verify underwriting scores, and lock in comprehensive protection.
+      </p>
+      <div style="display:flex; gap: 1rem;">
+        <a href="#premium-calc" class="btn-luxury" style="border-radius:4px; padding:0.9rem 2.5rem; font-weight:600;">ESTIMATE PREMIUM</a>
+        <a href="#eligibility" class="btn-luxury-outline" style="border-radius:4px; padding:0.9rem 2.5rem; font-weight:600;">CHECK ELIGIBILITY</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Interactive Section -->
+  <section class="section-padding" id="premium-calc" style="background-color: var(--bg-color);">
+    <div class="container">
+      
+      <!-- Luxury Tab Nav Category Selector -->
+      <div class="tab-nav">
+        <button class="tab-btn active" onclick="selectInsuranceCategory('health')">HEALTH & MEDICAL INSURANCE</button>
+        <button class="tab-btn" onclick="selectInsuranceCategory('life')">TERM LIFE & WEALTH SECURE</button>
+        <button class="tab-btn" onclick="selectInsuranceCategory('asset')">LUXURY ASSET & VALUABLES</button>
+      </div>
+
+      <!-- Interactive Calculator Grid -->
+      <div class="calculator-grid">
+        
+        <!-- Left: Sliders Inputs -->
+        <div class="calculator-card">
+          <h3 style="font-size: 1.8rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 0.5rem;">Underwriting Parameters</h3>
+          
+          <!-- Slider 1: Sum Assured / Valuation -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <span class="slider-label" id="lbl-val-title">Desired Sum Assured</span>
+              <div class="slider-val-container">
+                <span class="slider-val-prefix">₹</span>
+                <input type="text" id="val-text" class="slider-input-text" value="10,000,000" onchange="syncTextInput('val')" />
+              </div>
+            </div>
+            <input type="range" id="val-slider" class="range-slider" min="1000000" max="500000000" step="500000" value="10000000" oninput="syncSlider('val')" />
+            <div class="slider-hints">
+              <span id="lbl-val-min">₹10 Lakhs</span>
+              <span id="lbl-val-mid">₹2.5 Crores</span>
+              <span id="lbl-val-max">₹50 Crores</span>
+            </div>
+          </div>
+
+          <!-- Slider 2: Applicant Age / Coverage % -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <span class="slider-label" id="lbl-cov-title">Applicant Age</span>
+              <div class="slider-val-container">
+                <input type="text" id="cov-text" class="slider-input-text" value="30" onchange="syncTextInput('cov')" />
+                <span class="slider-val-prefix" id="lbl-cov-unit">Yrs</span>
+              </div>
+            </div>
+            <input type="range" id="cov-slider" class="range-slider" min="18" max="65" step="1" value="30" oninput="syncSlider('cov')" />
+            <div class="slider-hints">
+              <span id="lbl-cov-min">18 Yrs</span>
+              <span id="lbl-cov-mid">40 Yrs</span>
+              <span id="lbl-cov-max">65 Yrs</span>
+            </div>
+          </div>
+
+          <!-- Slider 3: Policy Term -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <span class="slider-label">Policy Term</span>
+              <div class="slider-val-container">
+                <input type="text" id="term-text" class="slider-input-text" value="10" onchange="syncTextInput('term')" />
+                <span class="slider-val-prefix">Yrs</span>
+              </div>
+            </div>
+            <input type="range" id="term-slider" class="range-slider" min="1" max="40" step="1" value="10" oninput="syncSlider('term')" />
+            <div class="slider-hints">
+              <span>1 Year</span>
+              <span>20 Years</span>
+              <span>40 Years</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Results Card -->
+        <div class="results-card">
+          <div>
+            <h3 style="font-size: 1.8rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1rem; margin-bottom: 1.5rem;">Estimated Premium</h3>
+            
+            <div class="result-row">
+              <div class="result-label">Annualized Policy Premium</div>
+              <div class="result-value gold" id="annual-output">₹8,000</div>
+            </div>
+
+            <div class="result-row">
+              <div class="result-label">Equivalent Monthly Premium</div>
+              <div class="result-value" id="monthly-output">₹667</div>
+            </div>
+
+            <div class="result-row">
+              <div class="result-label" id="lbl-sum-title">Active Insured Sum Limit</div>
+              <div class="result-value" style="color:var(--text-secondary);" id="sum-output">₹1,00,00,000</div>
+            </div>
+          </div>
+
+          <!-- Split Visualizer -->
+          <div class="split-bar-wrapper">
+            <div class="split-bar">
+              <div id="bar-insured"></div>
+              <div id="bar-deductible"></div>
+            </div>
+            <div class="split-labels">
+              <span><span class="split-dot-i"></span>Insured Sum: <strong id="lbl-insured-pct">100%</strong></span>
+              <span><span class="split-dot-d"></span>Uncovered/Co-pay: <strong id="lbl-deductible-pct">0%</strong></span>
+            </div>
+          </div>
+
+          <a href="#insurance-apply" class="btn-luxury" style="width:100%; border-radius:6px; font-weight:600; text-align:center; padding: 1rem 0;">SECURE THIS COVERAGE</a>
+        </div>
+
+      </div>
+
+      <!-- Dynamic Underwriters Grid -->
+      <div class="matrix-section">
+        <div class="section-header" style="text-align:left; margin-bottom:2.5rem;">
+          <span class="apple-subtitle" id="matrix-subtitle">Health Insurance Carriers</span>
+          <h2>Luxury Underwriters Comparative Grid</h2>
+          <p style="color: var(--text-secondary);">Access prime institutional underwriting programs. Click "Select Insurer" to pre-fill the application below.</p>
+        </div>
+
+        <div class="matrix-table-container">
+          <table class="matrix-table">
+            <thead>
+              <tr>
+                <th>Underwriter Institution</th>
+                <th>Estimated Premium Rate</th>
+                <th>Compulsory Co-pay / Deductible</th>
+                <th>Claims Settlement Ratio</th>
+                <th>Processing Speed / SLA</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="matrix-tbody">
+              <!-- Dynamically Populated by Category -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Interactive Risk Eligibility Score Checker -->
+  <section class="section-padding" id="eligibility" style="border-top:1px solid var(--border-color); background-color: var(--bg-surface);">
+    <div class="container">
+      <div class="section-header">
+        <span class="apple-subtitle">Underwriting Risk Score</span>
+        <h2>Health & Asset Eligibility Checker</h2>
+        <p style="color: var(--text-secondary); max-width:600px; margin: 0 auto;">Determine the underwritten risk viability score and coverage multipliers based on your custom profile parameters.</p>
+      </div>
+
+      <div class="eligibility-container">
+        <div class="eligibility-grid">
+          <!-- Inputs Column -->
+          <div style="display:flex; flex-direction:column; gap:2rem;">
+            <h3 style="font-size: 1.6rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">Profile details</h3>
+            
+            <div class="form-group">
+              <label for="el-lifestyle" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Lifestyle Profile</label>
+              <select id="el-lifestyle" class="form-input" style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); padding:1rem; font-size:0.95rem; font-weight:600;" onchange="calculateUnderwritingScore()">
+                <option value="prime" selected>Healthy Diet, Regular Exercise, Non-Smoker</option>
+                <option value="standard">Standard Lifestyle, Occasional Travel, Non-Smoker</option>
+                <option value="smoker">Active Smoker / High-Stress Business Profile</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="el-medical" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Medical / Physical Pre-conditions</label>
+              <select id="el-medical" class="form-input" style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); padding:1rem; font-size:0.95rem; font-weight:600;" onchange="calculateUnderwritingScore()">
+                <option value="none" selected>No Known Pre-existing Conditions / AAA Grade</option>
+                <option value="minor">Minor Conditions (Mild Hypertension / Controlled Sugar)</option>
+                <option value="chronic">Chronic Conditions under treatment</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="el-assetsafety" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Asset Safety / Coverage Status (For Asset Tab)</label>
+              <select id="el-assetsafety" class="form-input" style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); padding:1rem; font-size:0.95rem; font-weight:600;" onchange="calculateUnderwritingScore()">
+                <option value="full" selected>Fully Monitored Perimeter, Fire Alarms & CCTV</option>
+                <option value="standard">Standard Gated Security CCTV</option>
+                <option value="basic">Basic Security Arrangements Only</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Result Column -->
+          <div>
+            <div class="eligibility-result-box">
+              <span class="apple-subtitle" style="font-size:0.8rem;">UNDERWRITING VIABILITY RATING</span>
+              <div class="eligibility-amount" id="el-score-output">95 / 100</div>
+              <p style="color:var(--text-secondary); max-width:350px; font-size:0.9rem; line-height:1.6;" id="el-desc-output">
+                Your profile is categorized as **Low Risk (Prime AAA)**. This grants you an exclusive **15% discount multiplier** on the standard calculated premiums across Max Life and HDFC ERGO!
+              </p>
+              <button onclick="applyWithEligibility()" class="btn-luxury" style="margin-top:2rem; padding: 0.75rem 2rem; font-size:0.85rem; border-radius:6px;">PRE-FILL DOSSIER</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Application Capture Section -->
+  <section class="section-padding" id="insurance-apply" style="border-top: 1px solid var(--border-color); background-color: var(--bg-surface-elevated);">
+    <div class="container" style="max-width: 700px;">
+      <div class="inquiry-form-card glassmorphism" style="padding: 3.5rem; border-radius: 12px; border: 1px solid var(--border-color); position:relative;">
+        
+        <div style="text-align:center; margin-bottom:3rem;">
+          <span class="apple-subtitle">Direct Underwriting Desks</span>
+          <h3 class="luxury-heading" style="font-size:2.4rem; margin-bottom:1rem; text-align:center;">Elite Coverage Dossier</h3>
+          <p style="color:var(--text-secondary); font-size:0.95rem;">Submit your profile details. Our underwriting desks return custom policy proposals in 2 hours.</p>
+        </div>
+        
+        <form class="luxury-form" id="insurance-application-form" onsubmit="submitInsuranceApplication(event)">
+          
+          <div class="form-group">
+            <label for="l-name" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Applicant Full Name</label>
+            <input type="text" id="l-name" class="form-input" placeholder="Enter full legal name..." required style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); padding:1rem; font-size:0.95rem;" />
+          </div>
+
+          <div class="form-grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin:1.5rem 0;">
+            <div class="form-group">
+              <label for="l-email" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Email Address</label>
+              <input type="email" id="l-email" class="form-input" placeholder="email@address.com" required style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); padding:1rem; font-size:0.95rem;" />
+            </div>
+            <div class="form-group">
+              <label for="l-phone" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Mobile / Phone Number</label>
+              <input type="tel" id="l-phone" class="form-input" placeholder="+91 XXXXX XXXXX" required style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); padding:1rem; font-size:0.95rem;" />
+            </div>
+          </div>
+
+          <div class="form-grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:1.5rem;">
+            <div class="form-group">
+              <label for="l-category" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Insurance Pillar</label>
+              <select id="l-category" class="form-input" onchange="adaptFormDetails()" required style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); padding:1rem; font-size:0.95rem;">
+                <option value="Health Insurance" selected>Health & Medical Insurance</option>
+                <option value="Term Life Insurance">Term Life & Wealth Secure</option>
+                <option value="Luxury Asset Insurance">Luxury Asset & Valuables</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="l-required" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Coverage Amount Required (₹)</label>
+              <input type="text" id="l-required" class="form-input" placeholder="e.g. ₹10,00,00,000..." required style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); padding:1rem; font-size:0.95rem;" />
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom:1.5rem;">
+            <label for="l-insurer" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Preferred Insurance Carrier (Optional)</label>
+            <select id="l-insurer" class="form-input" style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); padding:1rem; font-size:0.95rem;">
+              <option value="Any Partner Carrier" selected>Route to Best Available Rate (Recommended)</option>
+              <option value="HDFC ERGO / Life">HDFC Bank Group (ERGO / Life)</option>
+              <option value="Max Life Insurance">Max Life Insurance</option>
+              <option value="Tata AIA / AIG">Tata Group (AIA Life / AIG General)</option>
+              <option value="ICICI Prudential / Lombard">ICICI Group (Prudential / Lombard)</option>
+              <option value="SBI Life / General">SBI Group (Life / General)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="l-msg" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Profile & Custom Coverage Requirements</label>
+            <textarea id="l-msg" class="form-input" rows="4" placeholder="Detail your profile age, physical medical histories, smoking habits, specific asset details (location, category for Asset cover), and coverage timelines..." required style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); padding:1rem; font-size:0.95rem; resize:vertical;"></textarea>
+          </div>
+
+          <button type="submit" class="btn-luxury" style="width:100%; border-radius:6px; margin-top:2.5rem; padding: 1.25rem; font-size: 1rem; font-weight:600; letter-spacing: 0.05em;">SUBMIT COVERAGE REQUEST DOSSIER</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Premium FAQ Grid -->
+  <section class="section-padding" style="background-color: var(--bg-surface); border-top:1px solid var(--border-color);">
+    <div class="container">
+      <div class="section-header">
+        <span class="apple-subtitle">Insurance Advisory</span>
+        <h2>Frequently Answered Queries</h2>
+        <p style="color: var(--text-secondary); max-width:600px; margin:0 auto;">Essential underwriting standards and claim policies to qualify for prime health, life, and asset coverages.</p>
+      </div>
+
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>What are the tax benefits associated with Health & Life Insurance?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>Under Indian IT Acts, premiums paid for Health Insurance qualify for deduction up to **₹25,000 (₹50,000 for senior citizens)** under **Section 80D**. Term Life Insurance premiums qualify for tax exemptions up to **₹1.5 Lakhs** under **Section 80C**, and the final death claim payouts are completely tax-exempt under **Section 10(10D)**.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>How does the cashless hospitalization network function in Health plans?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>Our premium health programs connect with HDFC ERGO and ICICI Lombard's cashless networks, spanning over **10,000+ elite hospital panels globally**. Upon admission, presenting your insurance card and pre-authorization form settles medical liabilities directly with the hospital, eliminating out-of-pocket costs.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>How are high-value luxury assets (Vehicles, Art, Properties) valued?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>Luxury asset valuation utilizes an Agreed Value or Market Value schedule. An independent certified appraiser reviews raw asset parameters, authentication certificates, and invoices. The underwriting board then registers a fixed Agreed Sum Insured, bypassing standard depreciation calculations during settlements.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>What is the waiting period for pre-existing medical conditions?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>Standard retail health policies require a 3 to 4-year waiting period for pre-existing conditions. However, our prime elite co-underwritten portfolios offer expedited terms, compressing waiting timelines down to **1 to 2 years** or providing immediate cover under special corporate/premium tariff modifications.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Injectable Footer Scripts -->
+  <script src="components/navbar.js"></script>
+  <script src="components/footer.js"></script>
+
+  <!-- Interactive Core Page Controller Scripts -->
+  <script>
+    // Global active product state
+    let activeCategory = 'health';
+
+    // Standard Preset defaults mapping
+    const insurancePresets = {
+      health: {
+        title: "Health & Medical Insurance",
+        val: 10000000, // ₹1 Crore Sum
+        cov: 35,       // Age 35
+        term: 1,       // 1 year cycle
+        minVal: 500000,
+        maxVal: 50000000,
+        valStep: 100000,
+        minCov: 18,
+        maxCov: 65,
+        covStep: 1,
+        underwriterList: [
+          { name: "HDFC ERGO Health", code: "HDF", rate: "0.15% - 0.22% p.a.", deductible: "Nil Co-pay", ratio: "99.1%", sla: "Cashless in 1 Hour" },
+          { name: "Tata AIG General", code: "TTA", rate: "0.18% - 0.25% p.a.", deductible: "Nil Co-pay", ratio: "98.8%", sla: "Cashless in 2 Hours" },
+          { name: "ICICI Lombard Health", code: "ICI", rate: "0.16% - 0.24% p.a.", deductible: "10% Co-pay (Optional)", ratio: "98.5%", sla: "Cashless in 1 Hour" },
+          { name: "SBI General Health", code: "SBI", rate: "0.14% - 0.20% p.a.", deductible: "15% Co-pay", ratio: "97.9%", sla: "Cashless in 3 Hours" }
+        ]
+      },
+      life: {
+        title: "Term Life & Wealth Secure",
+        val: 200000000, // ₹20 Crores Sum
+        cov: 30,        // Age 30
+        term: 30,       // 30 years term
+        minVal: 2500000,
+        maxVal: 500000000,
+        valStep: 500000,
+        minCov: 18,
+        maxCov: 60,
+        covStep: 1,
+        underwriterList: [
+          { name: "Max Life Term Insurance", code: "MAX", rate: "₹12K - ₹18K / Cr p.a.", deductible: "No Deductible", ratio: "99.6%", sla: "Instant Policy Lock" },
+          { name: "HDFC Life Term", code: "HDF", rate: "₹13K - ₹19K / Cr p.a.", deductible: "No Deductible", ratio: "99.4%", sla: "Medical in 24 Hours" },
+          { name: "Tata AIA Life Plan", code: "TTA", rate: "₹14K - ₹21K / Cr p.a.", deductible: "No Deductible", ratio: "99.2%", sla: "Digital pre-approval" },
+          { name: "ICICI Prudential Life", code: "ICI", rate: "₹13K - ₹20K / Cr p.a.", deductible: "No Deductible", ratio: "98.9%", sla: "Medical in 24 Hours" }
+        ]
+      },
+      asset: {
+        title: "Luxury Asset & Valuables",
+        val: 50000000,  // ₹5 Crores Value
+        cov: 100,       // 100% cover limit
+        term: 5,        // 5 years term
+        minVal: 1000000,
+        maxVal: 1000000000,
+        valStep: 500000,
+        minCov: 50,
+        maxCov: 100,
+        covStep: 1,
+        underwriterList: [
+          { name: "Tata AIG Asset Care", code: "TTA", rate: "0.08% - 0.12% p.a.", deductible: "0.1% Valuation", ratio: "98.8%", sla: "SLA 48 Hours" },
+          { name: "HDFC ERGO Valuables", code: "HDF", rate: "0.09% - 0.14% p.a.", deductible: "0.05% Valuation", ratio: "99.1%", sla: "SLA 24 Hours" },
+          { name: "ICICI Lombard Asset", code: "ICI", rate: "0.10% - 0.15% p.a.", deductible: "0.1% Valuation", ratio: "98.5%", sla: "SLA 3 Days" },
+          { name: "SBI General Asset cover", code: "SBI", rate: "0.07% - 0.11% p.a.", deductible: "0.15% Valuation", ratio: "97.9%", sla: "SLA 4 Days" }
+        ]
+      }
+    };
+
+    // Initialize Page Controls
+    document.addEventListener('DOMContentLoaded', () => {
+      // Set initial state
+      selectInsuranceCategory('health');
+      
+      // Setup FAQ Accordion Toggles
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question');
+        question.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          faqItems.forEach(f => f.classList.remove('active'));
+          if (!isActive) {
+            item.classList.add('active');
+          }
+        });
+      });
+
+      // Run initial eligibility calculation
+      calculateUnderwritingScore();
+    });
+
+    // Handle Insurance Category Selection
+    function selectInsuranceCategory(categoryKey) {
+      activeCategory = categoryKey;
+      
+      // Toggle tab buttons
+      const buttons = document.querySelectorAll('.tab-btn');
+      buttons.forEach(btn => btn.classList.remove('active'));
+      
+      let index = 0;
+      if (categoryKey === 'life') index = 1;
+      else if (categoryKey === 'asset') index = 2;
+      buttons[index].classList.add('active');
+
+      const preset = insurancePresets[categoryKey];
+      
+      const valSlider = document.getElementById('val-slider');
+      const covSlider = document.getElementById('cov-slider');
+      const termSlider = document.getElementById('term-slider');
+
+      // Update Slider Titles & Range Parameters
+      if (categoryKey === 'health') {
+        document.getElementById('lbl-val-title').textContent = "Desired Health Sum Insured";
+        document.getElementById('lbl-cov-title').textContent = "Applicant Current Age";
+        document.getElementById('lbl-cov-unit').textContent = "Yrs";
+        document.getElementById('lbl-sum-title').textContent = "Active Insured Medical Limit";
+        
+        document.getElementById('lbl-val-min').textContent = "₹5 Lakhs";
+        document.getElementById('lbl-val-mid').textContent = "₹2.5 Crores";
+        document.getElementById('lbl-val-max').textContent = "₹5 Crores";
+
+        document.getElementById('lbl-cov-min').textContent = "18 Yrs";
+        document.getElementById('lbl-cov-mid').textContent = "40 Yrs";
+        document.getElementById('lbl-cov-max').textContent = "65 Yrs";
+        
+        termSlider.min = 1;
+        termSlider.max = 5;
+      } else if (categoryKey === 'life') {
+        document.getElementById('lbl-val-title').textContent = "Desired Life Term Sum Assured";
+        document.getElementById('lbl-cov-title').textContent = "Applicant Current Age";
+        document.getElementById('lbl-cov-unit').textContent = "Yrs";
+        document.getElementById('lbl-sum-title').textContent = "Total Sum Assured Payable";
+
+        document.getElementById('lbl-val-min').textContent = "₹25 Lakhs";
+        document.getElementById('lbl-val-mid').textContent = "₹25 Crores";
+        document.getElementById('lbl-val-max').textContent = "₹50 Crores";
+
+        document.getElementById('lbl-cov-min').textContent = "18 Yrs";
+        document.getElementById('lbl-cov-mid').textContent = "40 Yrs";
+        document.getElementById('lbl-cov-max').textContent = "60 Yrs";
+
+        termSlider.min = 10;
+        termSlider.max = 40;
+      } else if (categoryKey === 'asset') {
+        document.getElementById('lbl-val-title').textContent = "Luxury Asset Valuation";
+        document.getElementById('lbl-cov-title').textContent = "Desired Coverage Limit";
+        document.getElementById('lbl-cov-unit').textContent = "%";
+        document.getElementById('lbl-sum-title').textContent = "Active Covered Valuation";
+
+        document.getElementById('lbl-val-min').textContent = "₹10 Lakhs";
+        document.getElementById('lbl-val-mid').textContent = "₹50 Crores";
+        document.getElementById('lbl-val-max').textContent = "₹100 Crores";
+
+        document.getElementById('lbl-cov-min').textContent = "50%";
+        document.getElementById('lbl-cov-mid').textContent = "75%";
+        document.getElementById('lbl-cov-max').textContent = "100%";
+
+        termSlider.min = 1;
+        termSlider.max = 10;
+      }
+
+      // Adapt slider parameters dynamically
+      valSlider.min = preset.minVal;
+      valSlider.max = preset.maxVal;
+      valSlider.step = preset.valStep;
+      valSlider.value = preset.val;
+
+      covSlider.min = preset.minCov;
+      covSlider.max = preset.maxCov;
+      covSlider.step = preset.covStep;
+      covSlider.value = preset.cov;
+
+      termSlider.value = preset.term;
+
+      // Sync to input text boxes
+      document.getElementById('val-text').value = formatNumberWithCommas(preset.val);
+      document.getElementById('cov-text').value = preset.cov;
+      document.getElementById('term-text').value = preset.term;
+
+      // Update comparison list header
+      document.getElementById('matrix-subtitle').textContent = preset.title;
+
+      // Populate matrices
+      populateUnderwriterMatrix(preset.underwriterList);
+
+      // Sync dropdown inside Lead form
+      const lCategory = document.getElementById('l-category');
+      if (categoryKey === 'health') lCategory.value = "Health Insurance";
+      else if (categoryKey === 'life') lCategory.value = "Term Life Insurance";
+      else if (categoryKey === 'asset') lCategory.value = "Luxury Asset Insurance";
+
+      // Execute calculation
+      updateCalculations();
+    }
+
+    // Populate comparison matrix
+    function populateUnderwriterMatrix(underwriters) {
+      const tbody = document.getElementById('matrix-tbody');
+      tbody.innerHTML = '';
+
+      underwriters.forEach(carrier => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <div class="bank-brand">
+              <div class="bank-logo-icon">${carrier.code}</div>
+              <div class="bank-name">${carrier.name}</div>
+            </div>
+          </td>
+          <td style="font-weight:600; color:var(--text-primary);">${carrier.rate}</td>
+          <td style="color:var(--text-secondary);">${carrier.deductible}</td>
+          <td style="color:var(--text-secondary);">${carrier.ratio}</td>
+          <td style="color:var(--gold-primary); font-weight:500;">${carrier.sla}</td>
+          <td>
+            <button onclick="selectInsurerForApplication('${carrier.name}')" class="btn-luxury-outline btn-apply-small">Select Insurer</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Quick select to apply with carrier
+    function selectInsurerForApplication(carrierName) {
+      document.getElementById('l-insurer').value = carrierName;
+
+      // Sync active slider value as required amount in form
+      const sliderVal = document.getElementById('val-slider').value;
+      document.getElementById('l-required').value = '₹' + formatNumberWithCommas(sliderVal);
+
+      // Smooth scroll down to application card
+      document.getElementById('loan-apply').scrollIntoView({ behavior: 'smooth' });
+
+      // Add clean visual indicator to form
+      const formCard = document.querySelector('.inquiry-form-card');
+      formCard.style.borderColor = 'var(--gold-primary)';
+      setTimeout(() => {
+        formCard.style.borderColor = 'var(--border-color)';
+      }, 1500);
+    }
+
+    // Sync sliders to inputs
+    function syncSlider(field) {
+      const slider = document.getElementById(`${field}-slider`);
+      const text = document.getElementById(`${field}-text`);
+      
+      if (field === 'val') {
+        text.value = formatNumberWithCommas(slider.value);
+      } else {
+        text.value = slider.value;
+      }
+      
+      updateCalculations();
+    }
+
+    // Sync inputs to sliders
+    function syncTextInput(field) {
+      const slider = document.getElementById(`${field}-slider`);
+      const text = document.getElementById(`${field}-text`);
+      
+      let val = text.value.replace(/,/g, '').trim();
+      val = parseFloat(val);
+
+      if (isNaN(val)) {
+        text.value = field === 'val' ? formatNumberWithCommas(slider.value) : slider.value;
+        return;
+      }
+
+      if (val < slider.min) val = slider.min;
+      if (val > slider.max) val = slider.max;
+
+      slider.value = val;
+      
+      if (field === 'val') {
+        text.value = formatNumberWithCommas(val);
+      } else {
+        text.value = val;
+      }
+
+      updateCalculations();
+    }
+
+    // Premium Calculations logic
+    function updateCalculations() {
+      const valuation = parseFloat(document.getElementById('val-slider').value);
+      const coverageVal = parseFloat(document.getElementById('cov-slider').value);
+      const term = parseInt(document.getElementById('term-slider').value);
+
+      let annualPremium = 0;
+      let monthlyPremium = 0;
+      let coverageSum = valuation;
+
+      if (activeCategory === 'health') {
+        // Health premium calculation based on coverage sum and age (coverageVal represents age)
+        const age = coverageVal;
+        let rate = 0.0006; // 0.06% of sum
+        if (age > 50) rate = 0.0015;
+        else if (age > 35) rate = 0.0010;
+
+        annualPremium = Math.round(valuation * rate);
+        monthlyPremium = Math.round(annualPremium / 12);
+        coverageSum = valuation;
+
+        document.getElementById('bar-insured').style.width = '100%';
+        document.getElementById('bar-deductible').style.width = '0%';
+        document.getElementById('lbl-insured-pct').textContent = '100%';
+        document.getElementById('lbl-deductible-pct').textContent = '0% co-pay';
+      } else if (activeCategory === 'life') {
+        // Term Life premium calculation based on age (coverageVal is age) and sum
+        const age = coverageVal;
+        // Standard Term calculation: ₹12,000 p.a. per ₹1 Crore sum assured for age 30, scaled
+        const baseTermRatePerCrore = 12000 + (age - 18) * 350; 
+        const crores = valuation / 10000000;
+        
+        annualPremium = Math.round(baseTermRatePerCrore * crores);
+        monthlyPremium = Math.round(annualPremium / 12);
+        coverageSum = valuation;
+
+        document.getElementById('bar-insured').style.width = '100%';
+        document.getElementById('bar-deductible').style.width = '0%';
+        document.getElementById('lbl-insured-pct').textContent = '100%';
+        document.getElementById('lbl-deductible-pct').textContent = 'No Deductible';
+      } else if (activeCategory === 'asset') {
+        // Asset premium: coverageVal represents desired coverage % (50% to 100%)
+        const coveragePct = coverageVal;
+        coverageSum = valuation * (coveragePct / 100);
+        
+        // 0.12% standard asset rate
+        annualPremium = Math.round(coverageSum * 0.0012);
+        monthlyPremium = Math.round(annualPremium / 12);
+
+        document.getElementById('bar-insured').style.width = coveragePct + '%';
+        document.getElementById('bar-deductible').style.width = (100 - coveragePct) + '%';
+        document.getElementById('lbl-insured-pct').textContent = coveragePct + '%';
+        document.getElementById('lbl-deductible-pct').textContent = (100 - coveragePct) + '%';
+      }
+
+      // Update outputs
+      document.getElementById('annual-output').textContent = '₹' + formatNumberWithCommas(annualPremium);
+      document.getElementById('monthly-output').textContent = '₹' + formatNumberWithCommas(monthlyPremium);
+      document.getElementById('sum-output').textContent = '₹' + formatNumberWithCommas(Math.round(coverageSum));
+    }
+
+    // Utility commas helper
+    function formatNumberWithCommas(x) {
+      const num = parseFloat(x.toString().replace(/,/g, ''));
+      if (isNaN(num)) return x;
+      return num.toLocaleString('en-IN');
+    }
+
+    // Underwriting Score Calculator
+    function calculateUnderwritingScore() {
+      const lifestyle = document.getElementById('el-lifestyle').value;
+      const medical = document.getElementById('el-medical').value;
+      const safety = document.getElementById('el-assetsafety').value;
+
+      let score = 95; // starting prime score
+
+      // Deductions based on risk criteria
+      if (lifestyle === 'standard') score -= 5;
+      else if (lifestyle === 'smoker') score -= 20;
+
+      if (medical === 'minor') score -= 10;
+      else if (medical === 'chronic') score -= 25;
+
+      if (activeCategory === 'asset') {
+        if (safety === 'standard') score -= 5;
+        else if (safety === 'basic') score -= 15;
+      }
+
+      const scoreOutput = document.getElementById('el-score-output');
+      const descOutput = document.getElementById('el-desc-output');
+
+      scoreOutput.textContent = `${score} / 100`;
+
+      if (score >= 85) {
+        descOutput.innerHTML = `Your profile is categorized as <strong>Preferred Prime (AAA Grade)</strong>. This grants you an exclusive **15% discount multiplier** on the standard calculated premiums across Max Life, HDFC and Tata AIA!`;
+      } else if (score >= 65) {
+        descOutput.innerHTML = `Your profile is categorized as <strong>Standard Risk (Class A)</strong>. Standard underwritten rates apply. High claim capacity and full cashless networks remain active.`;
+      } else {
+        descOutput.innerHTML = `Your profile is categorized as <strong>Moderate Risk (Class B/C)</strong>. Special underwriting checks, physical medical exams, or customized deductibles/co-pays may be requested.`;
+      }
+    }
+
+    // Pre-fill eligibility findings to Lead Form
+    function applyWithEligibility() {
+      const scoreText = document.getElementById('el-score-output').textContent;
+      const descText = document.getElementById('el-desc-output').textContent;
+      const lifeSelect = document.getElementById('el-lifestyle');
+      const lifeText = lifeSelect.options[lifeSelect.selectedIndex].text;
+
+      // Sync active slider value as required amount in form
+      const sliderVal = document.getElementById('val-slider').value;
+      document.getElementById('l-required').value = '₹' + formatNumberWithCommas(sliderVal);
+
+      // Pre-populate requirements notes
+      document.getElementById('l-msg').value = `Underwriting pre-score evaluation: ${scoreText}. Risk factors analyzed: ${descText}. Lifestyle profile: ${lifeText}.`;
+
+      // Smooth scroll to form
+      document.getElementById('loan-apply').scrollIntoView({ behavior: 'smooth' });
+
+      // Visual indicator blink
+      const formCard = document.querySelector('.inquiry-form-card');
+      formCard.style.borderColor = 'var(--gold-primary)';
+      setTimeout(() => {
+        formCard.style.borderColor = 'var(--border-color)';
+      }, 1500);
+    }
+
+    // Form adapt when dropdown shifts
+    function adaptFormDetails() {
+      const cat = document.getElementById('l-category').value;
+      const amountInput = document.getElementById('l-required');
+      
+      if (!amountInput.value) {
+        if (cat === "Health Insurance") amountInput.value = "₹1,00,00,000";
+        else if (cat === "Term Life Insurance") amountInput.value = "₹15,00,00,000";
+        else if (cat === "Luxury Asset Insurance") amountInput.value = "₹5,00,00,000";
+      }
+    }
+
+    // Lead Form submission logic to Supabase
+    async function submitInsuranceApplication(event) {
+      event.preventDefault();
+      
+      const name = document.getElementById('l-name').value.trim();
+      const email = document.getElementById('l-email').value.trim();
+      const phone = document.getElementById('l-phone').value.trim();
+      const category = document.getElementById('l-category').value;
+      const budget = document.getElementById('l-required').value.trim();
+      const carrier = document.getElementById('l-insurer').value;
+      const messageText = document.getElementById('l-msg').value.trim();
+      
+      const btn = event.target.querySelector('button[type="submit"]');
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "Submitting dossier securely...";
+
+      if (window.supabaseClient) {
+        const { data, error } = await window.supabaseClient.from('inquiries').insert([{
+          name: name,
+          email: email,
+          phone: phone,
+          budget: budget,
+          message: `[INSURANCE APPLICATION] Category: ${category} | Underwriter: ${carrier} | ${messageText}`,
+          status: 'pending',
+          created_at: new Date().toISOString()
+        }]);
+
+        btn.disabled = false;
+        btn.textContent = originalText;
+
+        if (error) {
+          alert(`Submission error: ${error.message}`);
+          return;
+        }
+
+        // Reset the form values
+        event.target.reset();
+
+        // Spawn luxury modal success alert
+        const alertBox = document.createElement('div');
+        alertBox.style.cssText = `
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: var(--bg-surface);
+          border: 1px solid var(--border-color-gold);
+          padding: 3.5rem 3rem;
+          border-radius: 12px;
+          z-index: 10000;
+          box-shadow: 0 40px 90px rgba(0,0,0,0.65), 0 0 35px var(--gold-glow);
+          max-width: 550px;
+          width: 90%;
+          text-align: center;
+          animation: insNotifyFade 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        `;
+        alertBox.innerHTML = `
+          <div style="font-size:3.5rem; margin-bottom:1.5rem;">📜</div>
+          <h3 style="font-family:var(--font-serif); font-size:2rem; color:var(--gold-primary); margin-bottom:1rem;">Dossier Received</h3>
+          <p style="color:var(--text-secondary); font-size:0.95rem; line-height:1.7; margin-bottom:2.25rem;">
+            Thank you <strong>${name}</strong>, your <strong>${category}</strong> coverage dossier has been securely captured. A senior risk analyst representing <strong>${carrier}</strong> will initiate contact within 2 hours.
+          </p>
+          <button class="btn-luxury" style="padding:0.85rem 3rem; border-radius:6px;" onclick="this.parentElement.remove()">CONFIRM</button>
+        `;
+        
+        document.body.appendChild(alertBox);
+
+        if (!document.getElementById('ins-notify-animation')) {
+          const style = document.createElement('style');
+          style.id = 'ins-notify-animation';
+          style.innerHTML = `
+            @keyframes insNotifyFade {
+              from { opacity: 0; transform: translate(-50%, -42%); }
+              to { opacity: 1; transform: translate(-50%, -50%); }
+            }
+          `;
+          document.head.appendChild(style);
+        }
+      } else {
+        alert("Server connection offline. Lead could not be transmitted.");
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    }
+  </script>
+</body>
+</html>

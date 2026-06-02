@@ -10,15 +10,21 @@
   <link rel="stylesheet" href="styles/components.css">
   <link rel="stylesheet" href="styles/pages.css">
 
-  <!-- Immediate Theme Lock -->
+  <!-- Immediate Theme Lock & Route Guard -->
   <script>
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
 
-    // Redirect to Admin instantly if already logged in (Supabase session key audit)
+    // Redirect instantly if session is already active
     const sessionKey = "sb-xqhrjhvbustdwmrmikya-auth-token";
-    if (localStorage.getItem(sessionKey)) {
+    const isAdmin = localStorage.getItem('isAdmin') === 'true';
+    if (localStorage.getItem(sessionKey) && isAdmin) {
       window.location.replace("admin.html");
+    } else {
+      const clientSession = JSON.parse(localStorage.getItem('clientSession') || '{}');
+      if (clientSession && clientSession.authenticated) {
+        window.location.replace("listings.html");
+      }
     }
   </script>
 
@@ -83,27 +89,53 @@
       btn.disabled = true;
       btn.textContent = "Logging in...";
 
+      // 1. Try Admin Login via standard Supabase Auth
       const { data, error } = await window.supabaseClient.auth.signInWithPassword({
         email,
         password
       });
 
-      btn.disabled = false;
-      btn.textContent = "Login";
-
       if (!error) {
-        errorBanner.style.display = 'none';
+        // Admin login success
+        localStorage.setItem('isAdmin', 'true');
+        localStorage.removeItem('clientSession');
         
-        // Dynamic success ingress transition
+        btn.disabled = false;
+        errorBanner.style.display = 'none';
         btn.style.background = 'var(--status-accepted)';
-        btn.textContent = "Login Approved";
+        btn.textContent = "Admin Approved";
         
         setTimeout(() => {
           window.location.replace("admin.html");
         }, 500);
+        return;
+      }
+
+      // 2. If Admin login fails, check standard authorized client database table
+      const { data: clientData, error: dbError } = await window.supabaseClient
+        .from('authorized_users')
+        .select('*')
+        .eq('email', email)
+        .eq('password', password);
+
+      btn.disabled = false;
+      btn.textContent = "Login";
+
+      if (!dbError && clientData && clientData.length > 0) {
+        // Client login success
+        localStorage.setItem('clientSession', JSON.stringify({ email, authenticated: true }));
+        localStorage.removeItem('isAdmin');
+        
+        errorBanner.style.display = 'none';
+        btn.style.background = 'var(--status-accepted)';
+        btn.textContent = "Access Approved";
+        
+        setTimeout(() => {
+          window.location.replace("listings.html");
+        }, 500);
       } else {
         // Mismatch visualizer
-        errorBanner.textContent = `Login failed: ${error.message}`;
+        errorBanner.textContent = "Login failed: Invalid email or password.";
         errorBanner.style.display = 'block';
         
         // Dynamic shimmer wiggle

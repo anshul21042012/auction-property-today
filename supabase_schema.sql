@@ -140,3 +140,27 @@ CREATE POLICY "Allow public to submit inquiries"
 CREATE POLICY "Allow authenticated admin full control on inquiries"
     ON public.inquiries FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
+
+-- 6. AUTHORIZED CLIENT ACCESS CONTROL SCHEMA [NEW]
+CREATE TABLE IF NOT EXISTS public.authorized_users (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    email text UNIQUE NOT NULL,
+    password text NOT NULL,
+    created_at timestamp with time zone DEFAULT timezone('utc'::text, now())
+);
+
+-- Enable RLS
+ALTER TABLE public.authorized_users ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow public read access to authorized_users" ON public.authorized_users;
+DROP POLICY IF EXISTS "Allow authenticated admin full control on authorized_users" ON public.authorized_users;
+
+-- Standard clients need to read this table to authenticate their passwords at login.
+-- Admins need full CRUD control.
+CREATE POLICY "Allow public read access to authorized_users"
+    ON public.authorized_users FOR SELECT USING (true);
+
+CREATE POLICY "Allow authenticated admin full control on authorized_users"
+    ON public.authorized_users FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Auction Financing & Loans | AuctionPropertyToday</title>
-  <meta name="description" content="Secure pre-approved credit rates, low-interest bridge capital, and 72-hour auction loan approvals directly from SBI, HDFC, ICICI, and partner banks.">
+  <title>Bespoke Financial & Elite Loans | AuctionPropertyToday</title>
+  <meta name="description" content="Access bespoke high-limit credit options. Calculate your exact EMI, check borrowing capacity, compare rates across premium banks, and submit pre-approval applications in under 2 minutes.">
   
   <!-- Critical Stylesheets -->
   <link rel="stylesheet" href="styles/index.css">
@@ -20,131 +20,1316 @@
   <!-- Supabase Live Ingress -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="services/supabaseClient.js"></script>
+
+  <!-- Exclusive Premium Loans Page Scoped CSS overrides -->
+  <style>
+    /* Scoped custom styling for Loans Portal */
+    .loans-hero {
+      padding: 10rem 0 6rem 0;
+      background: radial-gradient(circle at top right, rgba(212, 175, 55, 0.05) 0%, rgba(7, 7, 8, 0) 60%);
+      border-bottom: 1px solid var(--border-color);
+      text-align: center;
+    }
+    
+    .tab-nav {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 3.5rem;
+      flex-wrap: wrap;
+    }
+    
+    .tab-btn {
+      padding: 0.85rem 2.25rem;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 30px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 0.95rem;
+      letter-spacing: 0.03em;
+      transition: var(--transition-smooth);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    
+    .tab-btn.active {
+      background: var(--gold-gradient);
+      color: #070708 !important;
+      border-color: var(--gold-primary);
+      box-shadow: 0 4px 20px var(--gold-glow);
+      font-weight: 600;
+    }
+    
+    .tab-btn:hover:not(.active) {
+      border-color: var(--gold-primary);
+      color: var(--text-primary);
+      transform: translateY(-1px);
+    }
+    
+    .calculator-grid {
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 3rem;
+      margin-bottom: 5rem;
+      align-items: stretch;
+    }
+    
+    @media (max-width: 992px) {
+      .calculator-grid {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+      }
+    }
+    
+    .calculator-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 3rem;
+      box-shadow: 0 20px 45px var(--glass-shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 2.25rem;
+    }
+
+    .slider-group {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .slider-label {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      font-weight: 600;
+    }
+    
+    .slider-val-container {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .slider-val-prefix {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--gold-primary);
+      font-family: var(--font-serif);
+    }
+
+    .slider-input-text {
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-primary);
+      padding: 0.4rem 0.75rem;
+      width: 150px;
+      text-align: right;
+      font-weight: 600;
+      font-family: var(--font-serif);
+      font-size: 1.15rem;
+      transition: var(--transition-fast);
+    }
+    
+    .slider-input-text:focus {
+      border-color: var(--gold-primary);
+      box-shadow: 0 0 8px var(--gold-glow);
+    }
+    
+    /* Beautiful Custom Range Sliders */
+    .range-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--bg-color);
+      outline: none;
+      border: 1px solid var(--border-color);
+      transition: background 0.3s;
+    }
+    
+    .range-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--gold-gradient);
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--gold-glow);
+      transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+      border: none;
+    }
+    
+    .range-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+    
+    .slider-hints {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: -0.25rem;
+    }
+
+    .results-card {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-color-gold);
+      border-radius: 12px;
+      padding: 3rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 20px 45px var(--glass-shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .results-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 150px;
+      height: 150px;
+      background: radial-gradient(circle, rgba(212,175,55,0.06) 0%, rgba(212,175,55,0) 70%);
+      pointer-events: none;
+    }
+    
+    .result-row {
+      border-bottom: 1px solid var(--border-color);
+      padding: 1.5rem 0;
+    }
+    
+    .result-row:first-child {
+      padding-top: 0;
+    }
+    
+    .result-row:last-of-type {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    
+    .result-label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.35rem;
+      font-weight: 500;
+    }
+    
+    .result-value {
+      font-family: var(--font-serif);
+      font-size: 2.2rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+    
+    .result-value.gold {
+      color: var(--gold-primary);
+      background: var(--gold-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Principal Interest Ratio Split Bar */
+    .split-bar-wrapper {
+      margin: 1.5rem 0 0.5rem 0;
+    }
+
+    .split-bar {
+      display: flex;
+      height: 12px;
+      border-radius: 6px;
+      overflow: hidden;
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+    }
+    
+    #bar-principal {
+      background: var(--gold-gradient);
+      width: 60%;
+      transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    #bar-interest {
+      background: #503f16;
+      width: 40%;
+      transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    .split-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+    }
+    
+    .split-dot-p {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: var(--gold-primary);
+      border-radius: 50%;
+      margin-right: 0.35rem;
+    }
+
+    .split-dot-i {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #503f16;
+      border-radius: 50%;
+      margin-right: 0.35rem;
+    }
+
+    /* Eligibility Checker Styling */
+    .eligibility-container {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 3.5rem;
+      margin-bottom: 5rem;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    }
+    
+    .eligibility-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+    
+    @media (max-width: 992px) {
+      .eligibility-grid {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+      }
+    }
+    
+    .eligibility-result-box {
+      background: var(--bg-color);
+      border: 1px solid var(--border-color-gold);
+      border-radius: 12px;
+      padding: 3rem 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      min-height: 280px;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    .eligibility-amount {
+      font-family: var(--font-serif);
+      font-size: 3rem;
+      font-weight: 700;
+      color: var(--gold-primary);
+      background: var(--gold-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 1rem 0;
+      line-height: 1.1;
+    }
+
+    /* Lenders Comparison Matrix Table */
+    .matrix-section {
+      margin-bottom: 5rem;
+    }
+
+    .matrix-table-container {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      background: var(--bg-surface);
+    }
+    
+    .matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      min-width: 800px;
+    }
+    
+    .matrix-table th {
+      background: var(--bg-surface-elevated);
+      padding: 1.5rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-color);
+      font-weight: 600;
+    }
+    
+    .matrix-table td {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.95rem;
+      vertical-align: middle;
+    }
+    
+    .matrix-table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .matrix-table tr {
+      transition: background-color 0.2s ease;
+    }
+
+    .matrix-table tr:hover {
+      background: rgba(255, 255, 255, 0.015);
+    }
+    
+    .bank-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .bank-logo-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-color);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold-primary);
+      font-family: var(--font-serif);
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+
+    .bank-name {
+      font-family: var(--font-serif);
+      font-weight: 600;
+      font-size: 1.15rem;
+      color: var(--text-primary);
+    }
+    
+    .btn-apply-small {
+      padding: 0.5rem 1.25rem;
+      font-size: 0.8rem;
+      border-radius: 4px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Accordion FAQ Styling */
+    .faq-container {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .faq-item {
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--bg-surface);
+      overflow: hidden;
+      transition: var(--transition-smooth);
+    }
+
+    .faq-item.active {
+      border-color: var(--border-color-gold);
+      box-shadow: 0 5px 15px rgba(212,175,55,0.05);
+    }
+
+    .faq-question {
+      width: 100%;
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-align: left;
+      font-family: var(--font-serif);
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      transition: color 0.2s ease;
+    }
+
+    .faq-item:hover .faq-question {
+      color: var(--gold-primary);
+    }
+
+    .faq-icon {
+      font-size: 1.5rem;
+      color: var(--text-muted);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .faq-item.active .faq-icon {
+      transform: rotate(45deg);
+      color: var(--gold-primary);
+    }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), padding 0.4s ease;
+      padding: 0 2rem;
+    }
+
+    .faq-item.active .faq-answer {
+      max-height: 300px;
+      padding: 0 2rem 2rem 2rem;
+      border-top: 1px solid var(--border-color);
+      padding-top: 1.5rem;
+    }
+
+    .faq-answer p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+  </style>
 </head>
 <body>
 
-  <!-- Page Hero Header -->
-  <section class="page-hero">
-    <div class="container">
-      <span class="apple-subtitle">Bespoke Capital Solutions</span>
-      <h1>Auction Financing</h1>
-      <p>Unlock flexible liquidity structures designed strictly for fast distress real estate auctions.</p>
+  <!-- Bespoke Hero Header -->
+  <section class="loans-hero">
+    <div class="container" style="display:flex; flex-direction:column; align-items:center; text-align:center;">
+      <span class="apple-subtitle">Bespoke Financing & Luxury Credit Portfolios</span>
+      <h1 style="margin-bottom:1.5rem; font-size: 3.5rem;">Elite Personal & Business Loans</h1>
+      <p style="margin-bottom:2.5rem; max-width:650px; color: var(--text-secondary); font-size: 1.15rem; line-height: 1.6;">
+        Unlock high-limit liquid assets and custom-underwritten credit structures. Compare pre-approved interest rates across premium lenders, calculate monthly payments, and secure institutional funding.
+      </p>
+      <div style="display:flex; gap: 1rem;">
+        <a href="#emi-calc" class="btn-luxury" style="border-radius:4px; padding:0.9rem 2.5rem; font-weight:600;">CALCULATE EMI</a>
+        <a href="#eligibility" class="btn-luxury-outline" style="border-radius:4px; padding:0.9rem 2.5rem; font-weight:600;">CHECK ELIGIBILITY</a>
+      </div>
     </div>
   </section>
 
-  <!-- Detailed Pillar: Auction Financing & Loans -->
-  <section class="section-padding pillar-detail-section" style="border-bottom:1px solid var(--border-color);">
+  <!-- Main Interactive Section -->
+  <section class="section-padding" id="emi-calc" style="background-color: var(--bg-color);">
     <div class="container">
-      <div class="grid-2" style="align-items: center; gap: 4.5rem;">
-        <div>
-          <span class="apple-subtitle">Direct Recovery Credit</span>
-          <h2 style="font-size: clamp(2.2rem, 3.5vw, 3rem); margin-bottom: 1.5rem; font-family: var(--font-serif);">Specialized Bridge Financing for High-Net-Worth Acquisitions</h2>
-          <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 1.05rem;">Securing financing for distressed bank assets requires specialized lending structures. Standard home loans are rarely compatible with fast auction timelines. We bridge this gap by offering bespoke financial arrangements through our institutional banking networks.</p>
-          <p style="color: var(--text-secondary); margin-bottom: 2rem; font-size: 1rem;">Whether you need immediate Earnest Money Deposit (EMD) backing, high-LTV asset loans, or structured mezzanine bridge financing, our dedicated credit team secures approvals in as fast as 72 hours.</p>
+      
+      <!-- Luxury Tab Nav Category Selector -->
+      <div class="tab-nav">
+        <button class="tab-btn active" onclick="selectLoanCategory('home')">HOME LOANS (HOUSING)</button>
+        <button class="tab-btn" onclick="selectLoanCategory('lap')">LOAN AGAINST PROPERTY (LAP)</button>
+        <button class="tab-btn" onclick="selectLoanCategory('personal')">PERSONAL LOANS (UNSECURED)</button>
+        <button class="tab-btn" onclick="selectLoanCategory('business')">BUSINESS & MSME FINANCE</button>
+      </div>
+
+      <!-- Interactive Calculator Grid -->
+      <div class="calculator-grid">
+        
+        <!-- Left: Sliders Inputs -->
+        <div class="calculator-card">
+          <h3 style="font-size: 1.8rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 0.5rem;">Payment Parameters</h3>
           
-          <div class="banking-partners">
-            <span style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.1em; display:block; margin-bottom:1rem; font-weight:600;">Preferred Banking Partners</span>
-            <div style="display:flex; gap:1.5rem; flex-wrap:wrap; align-items:center;">
-              <span class="bank-pill">State Bank of India</span>
-              <span class="bank-pill">HDFC Bank</span>
-              <span class="bank-pill">ICICI Bank</span>
-              <span class="bank-pill">Axis Bank</span>
+          <!-- Slider 1: Loan Amount -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <span class="slider-label">Desired Loan Amount</span>
+              <div class="slider-val-container">
+                <span class="slider-val-prefix">₹</span>
+                <input type="text" id="amount-text" class="slider-input-text" value="5,000,000" onchange="syncTextInput('amount')" />
+              </div>
+            </div>
+            <input type="range" id="amount-slider" class="range-slider" min="100000" max="100000000" step="50000" value="5000000" oninput="syncSlider('amount')" />
+            <div class="slider-hints">
+              <span>₹1 Lakh</span>
+              <span>₹50 Lakhs</span>
+              <span>₹10 Crores</span>
+            </div>
+          </div>
+
+          <!-- Slider 2: Interest Rate -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <span class="slider-label">Annual Interest Rate</span>
+              <div class="slider-val-container">
+                <input type="text" id="rate-text" class="slider-input-text" value="8.45" onchange="syncTextInput('rate')" />
+                <span class="slider-val-prefix">%</span>
+              </div>
+            </div>
+            <input type="range" id="rate-slider" class="range-slider" min="5" max="20" step="0.05" value="8.45" oninput="syncSlider('rate')" />
+            <div class="slider-hints">
+              <span>5.0%</span>
+              <span>12.5%</span>
+              <span>20.0%</span>
+            </div>
+          </div>
+
+          <!-- Slider 3: Loan Tenure -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <span class="slider-label">Repayment Tenure</span>
+              <div class="slider-val-container">
+                <input type="text" id="tenure-text" class="slider-input-text" value="20" onchange="syncTextInput('tenure')" />
+                <span class="slider-val-prefix">Yrs</span>
+              </div>
+            </div>
+            <input type="range" id="tenure-slider" class="range-slider" min="1" max="30" step="1" value="20" oninput="syncSlider('tenure')" />
+            <div class="slider-hints">
+              <span>1 Year</span>
+              <span>15 Years</span>
+              <span>30 Years</span>
             </div>
           </div>
         </div>
-        
-        <div>
-          <div class="loan-stats-card glassmorphic">
-            <div class="stat-header">
-              <span class="stat-badge">LIVE OFFERS</span>
-              <h4>Pre-Approved Credit Rates</h4>
+
+        <!-- Right: Results Card -->
+        <div class="results-card">
+          <div>
+            <h3 style="font-size: 1.8rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1rem; margin-bottom: 1.5rem;">Repayment Breakdown</h3>
+            
+            <div class="result-row">
+              <div class="result-label">Monthly EMI Payment</div>
+              <div class="result-value gold" id="emi-output">₹43,263</div>
             </div>
-            
-            <div class="stat-rates-grid">
-              <div class="rate-box">
-                <span class="rate-label">Interest Rates</span>
-                <span class="rate-value">7.85% <span style="font-size:1rem; font-weight:300;">p.a. onwards</span></span>
-              </div>
-              <div class="rate-box">
-                <span class="rate-label">Approval Speed</span>
-                <span class="rate-value">72 Hours <span style="font-size:1rem; font-weight:300;">Turnaround</span></span>
-              </div>
-              <div class="rate-box">
-                <span class="rate-label">Loan-to-Value</span>
-                <span class="rate-value">Up to 80% <span style="font-size:1rem; font-weight:300;">Funding</span></span>
-              </div>
+
+            <div class="result-row">
+              <div class="result-label">Total Principal Payable</div>
+              <div class="result-value" id="principal-output">₹50,00,000</div>
             </div>
+
+            <div class="result-row">
+              <div class="result-label">Total Interest Payable</div>
+              <div class="result-value" style="color:var(--text-secondary);" id="interest-output">₹53,83,089</div>
+            </div>
+          </div>
+
+          <!-- Split Visualizer -->
+          <div class="split-bar-wrapper">
+            <div class="split-bar">
+              <div id="bar-principal"></div>
+              <div id="bar-interest"></div>
+            </div>
+            <div class="split-labels">
+              <span><span class="split-dot-p"></span>Principal: <strong id="lbl-principal-pct">48%</strong></span>
+              <span><span class="split-dot-i"></span>Interest: <strong id="lbl-interest-pct">52%</strong></span>
+            </div>
+          </div>
+
+          <a href="#loan-apply" class="btn-luxury" style="width:100%; border-radius:6px; font-weight:600; text-align:center; padding: 1rem 0;">APPLY FOR THIS LOAN</a>
+        </div>
+
+      </div>
+
+      <!-- Dynamic Comparative Matrix -->
+      <div class="matrix-section">
+        <div class="section-header" style="text-align:left; margin-bottom:2.5rem;">
+          <span class="apple-subtitle" id="matrix-subtitle">Home Loans</span>
+          <h2>Premium Lenders Comparative Grid</h2>
+          <p style="color: var(--text-secondary);">Direct access to bespoke institutional terms. Click "Select Bank" to pre-fill the application below.</p>
+        </div>
+
+        <div class="matrix-table-container">
+          <table class="matrix-table">
+            <thead>
+              <tr>
+                <th>Banking Institution</th>
+                <th>Underwritten Interest Rate</th>
+                <th>Processing Charges</th>
+                <th>Max Loan-to-Value (LTV)</th>
+                <th>Approval SLA</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="matrix-tbody">
+              <!-- Dynamically Populated by Category -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Interactive Borrowing Capacity Estimator -->
+  <section class="section-padding" id="eligibility" style="border-top:1px solid var(--border-color); background-color: var(--bg-surface);">
+    <div class="container">
+      <div class="section-header">
+        <span class="apple-subtitle">Credit Eligibility</span>
+        <h2>Borrowing Capacity Estimator</h2>
+        <p style="color: var(--text-secondary); max-width:600px; margin: 0 auto;">Determine your maximum institutional pre-approved financing limit based on income thresholds and current monthly liabilities.</p>
+      </div>
+
+      <div class="eligibility-container">
+        <div class="eligibility-grid">
+          <!-- Inputs Column -->
+          <div style="display:flex; flex-direction:column; gap:2rem;">
+            <h3 style="font-size: 1.6rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">Financial Inputs</h3>
             
-            <p style="color: var(--text-muted); font-size: 0.8rem; margin: 1.5rem 0; line-height: 1.5;">*Subject to credit audit evaluation and asset title status clearance. Bridge capital models feature flexible amortization schedules.</p>
-            
-            <a href="index.html#contact" class="btn-luxury" style="width: 100%; border-radius: 4px;">APPLY FOR FINANCING</a>
+            <div class="form-group">
+              <label for="el-income" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Gross Monthly Household Income (₹)</label>
+              <input type="text" id="el-income" value="150,000" class="form-input" style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); padding:1rem; font-size:1.1rem; font-family:var(--font-serif); font-weight:600;" oninput="formatAndCalculateEligibility()" />
+            </div>
+
+            <div class="form-group">
+              <label for="el-emis" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Existing Monthly Debt Commitments / EMIs (₹)</label>
+              <input type="text" id="el-emis" value="20,000" class="form-input" style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); padding:1rem; font-size:1.1rem; font-family:var(--font-serif); font-weight:600;" oninput="formatAndCalculateEligibility()" />
+            </div>
+
+            <div class="form-group">
+              <label for="el-employment" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Employment Profile</label>
+              <select id="el-employment" class="form-input" style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); padding:1rem; font-size:0.95rem; font-weight:600;" onchange="formatAndCalculateEligibility()">
+                <option value="salaried" selected>Salaried Corporate Professional</option>
+                <option value="self-employed">Self-Employed / Business Enterprise</option>
+                <option value="nri">NRI Professional</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Result Column -->
+          <div>
+            <div class="eligibility-result-box">
+              <span class="apple-subtitle" style="font-size:0.8rem;">ESTIMATED LOAN ELIGIBILITY</span>
+              <div class="eligibility-amount" id="el-amount-output">₹74.5 Lakhs</div>
+              <p style="color:var(--text-secondary); max-width:350px; font-size:0.9rem; line-height:1.6;" id="el-desc-output">
+                Based on a standard <strong>55% FOIR ratio</strong>, you qualify for an estimated loan at <strong>8.45% rate</strong> for a <strong>20-year tenure</strong> with a maximum monthly EMI threshold of ₹62,500.
+              </p>
+              <button onclick="applyWithEligibility()" class="btn-luxury" style="margin-top:2rem; padding: 0.75rem 2rem; font-size:0.85rem; border-radius:6px;">PRE-FILL APPLICATION</button>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Advisory FAQ Grid -->
-  <section class="section-padding" style="background-color: var(--bg-surface);">
+  <!-- Application Capture Section -->
+  <section class="section-padding" id="loan-apply" style="border-top: 1px solid var(--border-color); background-color: var(--bg-surface-elevated);">
+    <div class="container" style="max-width: 700px;">
+      <div class="inquiry-form-card glassmorphism" style="padding: 3.5rem; border-radius: 12px; border: 1px solid var(--border-color); position:relative;">
+        
+        <div style="text-align:center; margin-bottom:3rem;">
+          <span class="apple-subtitle">Direct Underwriting Route</span>
+          <h3 class="luxury-heading" style="font-size:2.4rem; margin-bottom:1rem; text-align:center;">Elite Pre-Approval Application</h3>
+          <p style="color:var(--text-secondary); font-size:0.95rem;">Submit your credentials. Our banking desk returns underwritten indicators in 2 hours.</p>
+        </div>
+        
+        <form class="luxury-form" id="loan-application-form" onsubmit="submitLoanApplication(event)">
+          
+          <div class="form-group">
+            <label for="l-name" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Applicant Full Name</label>
+            <input type="text" id="l-name" class="form-input" placeholder="Enter your full legal name..." required style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); padding:1rem; font-size:0.95rem;" />
+          </div>
+
+          <div class="form-grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin:1.5rem 0;">
+            <div class="form-group">
+              <label for="l-email" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Email Address</label>
+              <input type="email" id="l-email" class="form-input" placeholder="email@address.com" required style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); padding:1rem; font-size:0.95rem;" />
+            </div>
+            <div class="form-group">
+              <label for="l-phone" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Mobile / Phone Number</label>
+              <input type="tel" id="l-phone" class="form-input" placeholder="+91 XXXXX XXXXX" required style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); padding:1rem; font-size:0.95rem;" />
+            </div>
+          </div>
+
+          <div class="form-grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:1.5rem;">
+            <div class="form-group">
+              <label for="l-category" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Preferred Credit Category</label>
+              <select id="l-category" class="form-input" onchange="adaptFormDetails()" required style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); padding:1rem; font-size:0.95rem;">
+                <option value="Home Loan" selected>Home Loan (Housing Finance)</option>
+                <option value="Loan Against Property">Loan Against Property (LAP)</option>
+                <option value="Personal Loan">Personal Loan (Unsecured)</option>
+                <option value="Business Loan">Business / Commercial MSME Finance</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="l-required" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Funding Requirement (₹)</label>
+              <input type="text" id="l-required" class="form-input" placeholder="e.g. ₹50,00,000..." required style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); padding:1rem; font-size:0.95rem;" />
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom:1.5rem;">
+            <label for="l-bank" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Preferred Banking Underwriter (Optional)</label>
+            <select id="l-bank" class="form-input" style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); padding:1rem; font-size:0.95rem;">
+              <option value="Any Partner Bank" selected>Route to Best Available Offer (Recommended)</option>
+              <option value="State Bank of India">State Bank of India</option>
+              <option value="HDFC Bank">HDFC Bank</option>
+              <option value="ICICI Bank">ICICI Bank</option>
+              <option value="Axis Bank">Axis Bank</option>
+              <option value="Kotak Mahindra Bank">Kotak Mahindra Bank</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="l-msg" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Income & Financial Profile Details</label>
+            <textarea id="l-msg" class="form-input" rows="4" placeholder="Detail your monthly/annual income, current employment details (Company / Business Tenure), and specific financing timelines..." required style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); padding:1rem; font-size:0.95rem; resize:vertical;"></textarea>
+          </div>
+
+          <button type="submit" class="btn-luxury" style="width:100%; border-radius:6px; margin-top:2.5rem; padding: 1.25rem; font-size: 1rem; font-weight:600; letter-spacing: 0.05em;">SUBMIT PRE-APPROVAL SECURE dossier</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Premium FAQ Grid -->
+  <section class="section-padding" style="background-color: var(--bg-surface); border-top:1px solid var(--border-color);">
     <div class="container">
       <div class="section-header">
-        <span class="apple-subtitle">Financing Guide</span>
-        <h2>Credit FAQ</h2>
-        <p style="color: var(--text-secondary);">Important requirements to qualify for immediate EMD and asset financing.</p>
+        <span class="apple-subtitle">Credit Advisory</span>
+        <h2>Frequently Answered Queries</h2>
+        <p style="color: var(--text-secondary); max-width:600px; margin:0 auto;">Essential regulatory and financial standards to qualify for luxury pre-approved funding lines.</p>
       </div>
 
       <div class="faq-container">
         <div class="faq-item">
           <button class="faq-question">
-            <span>Can I apply for financing before identifying a property?</span>
+            <span>What are the criteria to qualify for prime underwritten interest rates?</span>
             <span class="faq-icon">+</span>
           </button>
           <div class="faq-answer">
-            <p>Yes. We highly recommend seeking a pre-approved credit sanction limit based on your HNI status and financial assets. This enables you to bid with absolute speed once a suitable liquidating asset is listed.</p>
+            <p>To secure prime rates (e.g., SBI Home Loans at 8.40% p.a.), applicants generally require a CIBIL credit score of 750 or higher, an active income profile showing a debt-to-income ratio (FOIR) under 50%, and fully clear title records in the case of collateral-backed secured funding products like Home Loans or LAP.</p>
           </div>
         </div>
 
         <div class="faq-item">
           <button class="faq-question">
-            <span>Is EMD funding provided directly as a cash transfer?</span>
+            <span>What is the difference between Fixed and Floating interest rate regimens?</span>
             <span class="faq-icon">+</span>
           </button>
           <div class="faq-answer">
-            <p>EMD backing is issued as a direct bank guarantee or a secure recovery demand draft directly in favor of the liquidating bank board's designated account, fully matching SARFAESI compliance protocols.</p>
+            <p>Fixed rate loans lock in a consistent monthly payments schedule regardless of market dynamics, while Floating rates fluctuate according to bank benchmarks (MCLR or External Benchmark Lending Rates - EBLR/RLLR). Floating options usually offer lower initial thresholds and allow prepayment without penalty chargers.</p>
           </div>
         </div>
 
         <div class="faq-item">
           <button class="faq-question">
-            <span>What happens to the loan if I do not win the bid?</span>
+            <span>How does the Borrowing Capacity Estimator calculate limits?</span>
             <span class="faq-icon">+</span>
           </button>
           <div class="faq-answer">
-            <p>If your bid is unsuccessful, the EMD bank guarantee is immediately discharged with zero interest accrual or processing penalties, and your pre-approved auction limit is preserved for the next listing.</p>
+            <p>Our checker employs standard banking underwriting metrics. It utilizes a Fixed Obligation to Income Ratio (FOIR) that scales from 50% to 60% based on your income brackets. This ratio determines how much monthly income is available for debt service, subtracts your active EMIs, and then back-calculates standard borrowing volume metrics.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>What documentation profiles are required for commercial MSME applications?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>Commercial files require: 3 years of fully audited balance sheets and profit & loss (P&L) schedules, GST returns for the previous 12 months, bank account statements representing main operational portals, MSME/GST registration licenses, and basic KYC/property papers of primary enterprise promoters.</p>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Scripts -->
+  <!-- Injectable Footer Scripts -->
   <script src="components/navbar.js"></script>
   <script src="components/footer.js"></script>
 
-  <!-- Interactive Controls Code -->
+  <!-- Interactive Core Page Controller Scripts -->
   <script>
-    // FAQ Accordion Functionality
-    const faqItems = document.querySelectorAll('.faq-item');
-    faqItems.forEach(item => {
-      const question = item.querySelector('.faq-question');
-      question.addEventListener('click', () => {
-        const isActive = item.classList.contains('active');
-        faqItems.forEach(faq => faq.classList.remove('active'));
-        if (!isActive) {
-          item.classList.add('active');
-        }
+    // Global active product state
+    let activeCategory = 'home';
+
+    // Standard Preset defaults mapping
+    const loanPresets = {
+      home: {
+        title: "Home Loans (Housing Finance)",
+        amount: 7500000,
+        rate: 8.45,
+        tenure: 20,
+        minAmount: 500000,
+        maxAmount: 100000000,
+        amountStep: 100000,
+        minTenure: 5,
+        maxTenure: 30,
+        bankList: [
+          { name: "State Bank of India", code: "SBI", rate: "8.40% - 9.15%", fee: "0.35% + GST", ltv: "Up to 90%", sla: "4 Days" },
+          { name: "HDFC Bank Ltd", code: "HDF", rate: "8.45% - 9.35%", fee: "0.50% (Max ₹10K)", ltv: "Up to 85%", sla: "3 Days" },
+          { name: "ICICI Bank Ltd", code: "ICI", rate: "8.50% - 9.50%", fee: "0.50% + GST", ltv: "Up to 85%", sla: "5 Days" },
+          { name: "Axis Bank Ltd", code: "AXI", rate: "8.60% - 9.65%", fee: "0.40% + GST", ltv: "Up to 80%", sla: "4 Days" },
+          { name: "Kotak Mahindra Bank", code: "KOT", rate: "8.50% - 9.25%", fee: "Nil for Prime Files", ltv: "Up to 85%", sla: "3 Days" }
+        ]
+      },
+      lap: {
+        title: "Loan Against Property (LAP)",
+        amount: 15000000,
+        rate: 9.25,
+        tenure: 15,
+        minAmount: 1000000,
+        maxAmount: 200000000,
+        amountStep: 250000,
+        minTenure: 5,
+        maxTenure: 15,
+        bankList: [
+          { name: "ICICI Bank Ltd", code: "ICI", rate: "9.25% - 10.75%", fee: "1.00% + GST", ltv: "Up to 70%", sla: "7 Days" },
+          { name: "HDFC Bank Ltd", code: "HDF", rate: "9.30% - 11.00%", fee: "0.75% + GST", ltv: "Up to 65%", sla: "6 Days" },
+          { name: "State Bank of India", code: "SBI", rate: "9.15% - 9.85%", fee: "0.50% (Max ₹50K)", ltv: "Up to 70%", sla: "8 Days" },
+          { name: "Axis Bank Ltd", code: "AXI", rate: "9.50% - 11.25%", fee: "1.00% + GST", ltv: "Up to 65%", sla: "7 Days" },
+          { name: "Kotak Mahindra Bank", code: "KOT", rate: "9.40% - 10.50%", fee: "0.75% + GST", ltv: "Up to 65%", sla: "5 Days" }
+        ]
+      },
+      personal: {
+        title: "Unsecured Personal Loans",
+        amount: 1200000,
+        rate: 10.75,
+        tenure: 5,
+        minAmount: 100000,
+        maxAmount: 5000000,
+        amountStep: 50000,
+        minTenure: 1,
+        maxTenure: 7,
+        bankList: [
+          { name: "HDFC Bank Ltd", code: "HDF", rate: "10.50% - 14.50%", fee: "1.50% Flat", ltv: "Collateral Free", sla: "24 Hours" },
+          { name: "ICICI Bank Ltd", code: "ICI", rate: "10.65% - 15.00%", fee: "1.25% + GST", ltv: "Collateral Free", sla: "2 Hours" },
+          { name: "Axis Bank Ltd", code: "AXI", rate: "10.75% - 16.00%", fee: "1.50% + GST", ltv: "Collateral Free", sla: "36 Hours" },
+          { name: "State Bank of India", code: "SBI", rate: "11.00% - 12.50%", fee: "1.00% + GST", ltv: "Collateral Free", sla: "3 Days" },
+          { name: "Kotak Mahindra Bank", code: "KOT", rate: "10.50% - 13.99%", fee: "0.99% Flat Offer", ltv: "Collateral Free", sla: "4 Hours" }
+        ]
+      },
+      business: {
+        title: "Business & Commercial MSME Loans",
+        amount: 3500000,
+        rate: 12.50,
+        tenure: 5,
+        minAmount: 500000,
+        maxAmount: 50000000,
+        amountStep: 100000,
+        minTenure: 1,
+        maxTenure: 7,
+        bankList: [
+          { name: "Kotak Mahindra Bank", code: "KOT", rate: "12.00% - 15.50%", fee: "1.50% + GST", ltv: "Up to ₹50L free", sla: "2 Days" },
+          { name: "HDFC Bank Ltd", code: "HDF", rate: "12.50% - 16.50%", fee: "1.75% + GST", ltv: "Up to ₹75L free", sla: "3 Days" },
+          { name: "Axis Bank Ltd", code: "AXI", rate: "12.75% - 17.00%", fee: "2.00% Flat", ltv: "Up to ₹50L free", sla: "2 Days" },
+          { name: "ICICI Bank Ltd", code: "ICI", rate: "12.50% - 16.00%", fee: "1.50% + GST", ltv: "Up to ₹50L free", sla: "3 Days" },
+          { name: "State Bank of India", code: "SBI", rate: "11.50% - 14.00%", fee: "1.00% + GST", ltv: "Asset Backed", sla: "5 Days" }
+        ]
+      }
+    };
+
+    // Initialize Page Controls
+    document.addEventListener('DOMContentLoaded', () => {
+      // Set initial state
+      selectLoanCategory('home');
+      
+      // Setup FAQ Accordion Toggles
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question');
+        question.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          faqItems.forEach(f => f.classList.remove('active'));
+          if (!isActive) {
+            item.classList.add('active');
+          }
+        });
       });
+
+      // Run initial eligibility calculation
+      formatAndCalculateEligibility();
     });
+
+    // Handle Loan Preset Selection
+    function selectLoanCategory(categoryKey) {
+      activeCategory = categoryKey;
+      
+      // Toggle tab buttons
+      const buttons = document.querySelectorAll('.tab-btn');
+      buttons.forEach(btn => btn.classList.remove('active'));
+      
+      // Update target active classes
+      let index = 0;
+      if (categoryKey === 'lap') index = 1;
+      else if (categoryKey === 'personal') index = 2;
+      else if (categoryKey === 'business') index = 3;
+      buttons[index].classList.add('active');
+
+      // Load presets into sliders
+      const preset = loanPresets[categoryKey];
+      
+      const amtSlider = document.getElementById('amount-slider');
+      const rateSlider = document.getElementById('rate-slider');
+      const tenureSlider = document.getElementById('tenure-slider');
+
+      // Adapt slider limits dynamically based on category limits
+      amtSlider.min = preset.minAmount;
+      amtSlider.max = preset.maxAmount;
+      amtSlider.step = preset.amountStep;
+      amtSlider.value = preset.amount;
+
+      rateSlider.value = preset.rate;
+
+      tenureSlider.min = preset.minTenure;
+      tenureSlider.max = preset.maxTenure;
+      tenureSlider.value = preset.tenure;
+
+      // Sync to visual inputs
+      document.getElementById('amount-text').value = formatNumberWithCommas(preset.amount);
+      document.getElementById('rate-text').value = preset.rate.toFixed(2);
+      document.getElementById('tenure-text').value = preset.tenure;
+
+      // Update the bank grid subhead
+      document.getElementById('matrix-subtitle').textContent = preset.title;
+
+      // Re-populate banking comparison matrix
+      populateBankingMatrix(preset.bankList);
+
+      // Adapt Form category pick sync
+      const lCategory = document.getElementById('l-category');
+      if (categoryKey === 'home') lCategory.value = "Home Loan";
+      else if (categoryKey === 'lap') lCategory.value = "Loan Against Property";
+      else if (categoryKey === 'personal') lCategory.value = "Personal Loan";
+      else if (categoryKey === 'business') lCategory.value = "Business Loan";
+
+      // Execute calculation
+      updateCalculations();
+    }
+
+    // Populate the Bank Comparative table
+    function populateBankingMatrix(banks) {
+      const tbody = document.getElementById('matrix-tbody');
+      tbody.innerHTML = '';
+
+      banks.forEach(bank => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <div class="bank-brand">
+              <div class="bank-logo-icon">${bank.code}</div>
+              <div class="bank-name">${bank.name}</div>
+            </div>
+          </td>
+          <td style="font-weight:600; color:var(--text-primary);">${bank.rate}</td>
+          <td style="color:var(--text-secondary);">${bank.fee}</td>
+          <td style="color:var(--text-secondary);">${bank.ltv}</td>
+          <td style="color:var(--gold-primary); font-weight:500;">${bank.sla}</td>
+          <td>
+            <button onclick="selectBankForApplication('${bank.name}')" class="btn-luxury-outline btn-apply-small">Select Bank</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Quick select a bank to apply with
+    function selectBankForApplication(bankName) {
+      const formBank = document.getElementById('l-bank');
+      formBank.value = bankName;
+
+      // Sync active slider value as required amount in form
+      const sliderAmt = document.getElementById('amount-slider').value;
+      document.getElementById('l-required').value = '₹' + formatNumberWithCommas(sliderAmt);
+
+      // Smooth scroll down to application card
+      document.getElementById('loan-apply').scrollIntoView({ behavior: 'smooth' });
+
+      // Add clean subtle flash visual indication to card
+      const formCard = document.querySelector('.inquiry-form-card');
+      formCard.style.borderColor = 'var(--gold-primary)';
+      setTimeout(() => {
+        formCard.style.borderColor = 'var(--border-color)';
+      }, 1500);
+    }
+
+    // Sync values from Sliders to Input Texts
+    function syncSlider(field) {
+      const slider = document.getElementById(`${field}-slider`);
+      const text = document.getElementById(`${field}-text`);
+      
+      if (field === 'amount') {
+        text.value = formatNumberWithCommas(slider.value);
+      } else if (field === 'rate') {
+        text.value = parseFloat(slider.value).toFixed(2);
+      } else {
+        text.value = slider.value;
+      }
+      
+      updateCalculations();
+    }
+
+    // Sync values from Input Texts to Sliders
+    function syncTextInput(field) {
+      const slider = document.getElementById(`${field}-slider`);
+      const text = document.getElementById(`${field}-text`);
+      
+      let val = text.value.replace(/,/g, '').trim();
+      val = parseFloat(val);
+
+      if (isNaN(val)) {
+        // Reset to slider original
+        text.value = field === 'amount' ? formatNumberWithCommas(slider.value) : slider.value;
+        return;
+      }
+
+      // Constrain inside bounds
+      if (val < slider.min) val = slider.min;
+      if (val > slider.max) val = slider.max;
+
+      slider.value = val;
+      
+      if (field === 'amount') {
+        text.value = formatNumberWithCommas(val);
+      } else if (field === 'rate') {
+        text.value = val.toFixed(2);
+      } else {
+        text.value = val;
+      }
+
+      updateCalculations();
+    }
+
+    // Core EMI Math calculation engine
+    function updateCalculations() {
+      const principal = parseFloat(document.getElementById('amount-slider').value);
+      const annualRate = parseFloat(document.getElementById('rate-slider').value);
+      const tenureYears = parseInt(document.getElementById('tenure-slider').value);
+
+      const r = annualRate / 12 / 100;
+      const n = tenureYears * 12;
+
+      let emi = 0;
+      if (r === 0) {
+        emi = principal / n;
+      } else {
+        emi = principal * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
+      }
+
+      const totalRepay = emi * n;
+      const totalInterest = totalRepay - principal;
+
+      // Update text outputs
+      document.getElementById('emi-output').textContent = '₹' + formatNumberWithCommas(Math.round(emi));
+      document.getElementById('principal-output').textContent = '₹' + formatNumberWithCommas(principal);
+      document.getElementById('interest-output').textContent = '₹' + formatNumberWithCommas(Math.round(totalInterest));
+
+      // Calculate percentages for split bar
+      const principalPct = Math.round((principal / totalRepay) * 100);
+      const interestPct = 100 - principalPct;
+
+      document.getElementById('bar-principal').style.width = principalPct + '%';
+      document.getElementById('bar-interest').style.width = interestPct + '%';
+
+      document.getElementById('lbl-principal-pct').textContent = principalPct + '%';
+      document.getElementById('lbl-interest-pct').textContent = interestPct + '%';
+    }
+
+    // Utility formatting helpers
+    function formatNumberWithCommas(x) {
+      const num = parseFloat(x.toString().replace(/,/g, ''));
+      if (isNaN(num)) return x;
+      return num.toLocaleString('en-IN');
+    }
+
+    // Eligibility Calculator
+    function formatAndCalculateEligibility() {
+      const incomeInput = document.getElementById('el-income');
+      const emisInput = document.getElementById('el-emis');
+      
+      let income = parseFloat(incomeInput.value.replace(/,/g, '')) || 0;
+      let emis = parseFloat(emisInput.value.replace(/,/g, '')) || 0;
+
+      // Format input text boxes cleanly
+      if (document.activeElement !== incomeInput) {
+        incomeInput.value = formatNumberWithCommas(income);
+      }
+      if (document.activeElement !== emisInput) {
+        emisInput.value = formatNumberWithCommas(emis);
+      }
+
+      const emp = document.getElementById('el-employment').value;
+
+      // Bank FOIR Logic (Debt service ratio based on income level)
+      let foir = 0.50; // default 50%
+      if (income >= 150000) foir = 0.60; // 60% for luxury earners
+      else if (income >= 75000) foir = 0.55;
+
+      if (emp === 'self-employed') {
+        foir -= 0.05; // slightly tighter requirements for business profiles
+      }
+
+      // Max allowable monthly EMI budget
+      const availEMI = (income * foir) - emis;
+
+      const outputBox = document.getElementById('el-amount-output');
+      const descBox = document.getElementById('el-desc-output');
+
+      if (availEMI <= 5000) {
+        outputBox.innerHTML = "Liability Alert";
+        outputBox.style.fontSize = "2.2rem";
+        descBox.innerHTML = "Your current existing debt commitments exceed your institutional household income safety thresholds. Reduce liabilities to qualify.";
+        return;
+      }
+      
+      outputBox.style.fontSize = "3rem";
+
+      // Reverse calculate standard max loan amount: P = E_avail * ((1+r)^n - 1) / (r * (1+r)^n)
+      // Assume a representative prime rate based on active page category
+      let interestRate = 8.45; // standard home rate
+      let tenure = 20;
+
+      if (activeCategory === 'lap') {
+        interestRate = 9.25;
+        tenure = 15;
+      } else if (activeCategory === 'personal') {
+        interestRate = 10.75;
+        tenure = 5;
+      } else if (activeCategory === 'business') {
+        interestRate = 12.50;
+        tenure = 5;
+      }
+
+      const r = interestRate / 12 / 100;
+      const n = tenure * 12;
+
+      const maxLoan = availEMI * (Math.pow(1 + r, n) - 1) / (r * Math.pow(1 + r, n));
+      
+      let amountFormatted = '';
+      if (maxLoan >= 10000000) {
+        amountFormatted = `₹${(maxLoan / 10000000).toFixed(2)} Cr`;
+      } else {
+        amountFormatted = `₹${(maxLoan / 100000).toFixed(1)} Lakhs`;
+      }
+
+      outputBox.innerHTML = amountFormatted;
+      descBox.innerHTML = `Based on a standard <strong>${Math.round(foir * 100)}% FOIR ratio</strong>, you qualify for an estimated loan at <strong>${interestRate}% p.a.</strong> for a <strong>${tenure}-year tenure</strong> with a maximum monthly EMI capacity of <strong>₹${formatNumberWithCommas(Math.round(availEMI))}</strong>.`;
+    }
+
+    // Auto pre-fill the eligibility estimation to lead form
+    function applyWithEligibility() {
+      const outputVal = document.getElementById('el-amount-output').textContent;
+      if (outputVal === "Liability Alert") {
+        alert("Please adjust inputs to generate a positive pre-approval calculation first.");
+        return;
+      }
+
+      // Fill in required amount
+      document.getElementById('l-required').value = outputVal;
+
+      // Fill in standard explanatory financial text
+      const descVal = document.getElementById('el-desc-output').textContent;
+      document.getElementById('l-msg').value = `Pre-approved estimation request based on details: ${descVal}. Employment Profile: ${document.getElementById('el-employment').value}.`;
+
+      // Smooth scroll down to form
+      document.getElementById('loan-apply').scrollIntoView({ behavior: 'smooth' });
+
+      // Visual feedback blink
+      const formCard = document.querySelector('.inquiry-form-card');
+      formCard.style.borderColor = 'var(--gold-primary)';
+      setTimeout(() => {
+        formCard.style.borderColor = 'var(--border-color)';
+      }, 1500);
+    }
+
+    // Form adapt values when category dropdown shifts
+    function adaptFormDetails() {
+      const cat = document.getElementById('l-category').value;
+      const amountInput = document.getElementById('l-required');
+      
+      // Auto-pre-fill a typical standard required amount if currently empty
+      if (!amountInput.value) {
+        if (cat === "Home Loan") amountInput.value = "₹75,00,000";
+        else if (cat === "Loan Against Property") amountInput.value = "₹1,50,00,000";
+        else if (cat === "Personal Loan") amountInput.value = "₹12,0,000";
+        else if (cat === "Business Loan") amountInput.value = "₹35,0,000";
+      }
+    }
+
+    // Lead Capture Form Ingress submission logic to Supabase Relational Schema
+    async function submitLoanApplication(event) {
+      event.preventDefault();
+      
+      const name = document.getElementById('l-name').value.trim();
+      const email = document.getElementById('l-email').value.trim();
+      const phone = document.getElementById('l-phone').value.trim();
+      const category = document.getElementById('l-category').value;
+      const budget = document.getElementById('l-required').value.trim();
+      const bank = document.getElementById('l-bank').value;
+      const messageText = document.getElementById('l-msg').value.trim();
+      
+      const btn = event.target.querySelector('button[type="submit"]');
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "Submitting dossier securely...";
+
+      if (window.supabaseClient) {
+        const { data, error } = await window.supabaseClient.from('inquiries').insert([{
+          name: name,
+          email: email,
+          phone: phone,
+          budget: budget,
+          message: `[LOAN APPLICATION] Category: ${category} | Underwriter Routeings: ${bank} | ${messageText}`,
+          status: 'pending',
+          created_at: new Date().toISOString()
+        }]);
+
+        btn.disabled = false;
+        btn.textContent = originalText;
+
+        if (error) {
+          alert(`Submission error: ${error.message}`);
+          return;
+        }
+
+        // Reset the form values
+        event.target.reset();
+
+        // Spawn luxury modal success alert
+        const alertBox = document.createElement('div');
+        alertBox.style.cssText = `
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: var(--bg-surface);
+          border: 1px solid var(--border-color-gold);
+          padding: 3.5rem 3rem;
+          border-radius: 12px;
+          z-index: 10000;
+          box-shadow: 0 40px 90px rgba(0,0,0,0.65), 0 0 35px var(--gold-glow);
+          max-width: 550px;
+          width: 90%;
+          text-align: center;
+          animation: loanNotifyFade 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        `;
+        alertBox.innerHTML = `
+          <div style="font-size:3.5rem; margin-bottom:1.5rem;">📜</div>
+          <h3 style="font-family:var(--font-serif); font-size:2rem; color:var(--gold-primary); margin-bottom:1rem;">Dossier Received</h3>
+          <p style="color:var(--text-secondary); font-size:0.95rem; line-height:1.7; margin-bottom:2.25rem;">
+            Thank you <strong>${name}</strong>, your <strong>${category}</strong> pre-approval dossier has been securely captured. A designated senior banker representing <strong>${bank}</strong> will initiate contact within 2 hours.
+          </p>
+          <button class="btn-luxury" style="padding:0.85rem 3rem; border-radius:6px;" onclick="this.parentElement.remove()">CONFIRM</button>
+        `;
+        
+        document.body.appendChild(alertBox);
+
+        if (!document.getElementById('loan-notify-animation')) {
+          const style = document.createElement('style');
+          style.id = 'loan-notify-animation';
+          style.innerHTML = `
+            @keyframes loanNotifyFade {
+              from { opacity: 0; transform: translate(-50%, -42%); }
+              to { opacity: 1; transform: translate(-50%, -50%); }
+            }
+          `;
+          document.head.appendChild(style);
+        }
+      } else {
+        alert("Server connection offline. Lead could not be transmitted.");
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    }
   </script>
 </body>
 </html>
