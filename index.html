@@ -153,39 +153,145 @@
       </div>
 
       <div class="contact-grid">
-        <!-- Left form panel -->
-        <div class="inquiry-form-card glassmorphism" style="padding: 3rem; border-radius: 6px; border: 1px solid var(--border-color);">
-          <h3 class="luxury-heading" style="font-size:2rem; margin-bottom:1rem; text-align:center;">Support Request</h3>
-          <p style="color:var(--text-secondary); text-align:center; font-size:0.9rem; margin-bottom:2.5rem;">Have questions about bidding or registration? Send us a message.</p>
-          
-          <form class="luxury-form" id="contact-portal-form" onsubmit="submitContactQuery(event)">
-            <div class="form-group">
-              <label for="c-name" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Name</label>
-              <input type="text" id="c-name" class="form-input" placeholder="Full Name..." required style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:4px; color:var(--text-primary); padding:0.75rem 1rem; font-size:0.9rem;" />
-            </div>
+        <!-- Left form panel: Smart Unified Inquiry Form -->
+        <div class="inquiry-form-card glassmorphism" style="padding: 3rem; border-radius: 8px; border: 1px solid var(--border-color);">
+          <div style="text-align: center; margin-bottom: 2rem;">
+            <span class="apple-subtitle" style="color: var(--gold-primary); font-size:0.75rem; letter-spacing:0.15em;">Get Expert Assistance</span>
+            <h3 class="luxury-heading" style="font-size: 2rem; margin-top: 0.5rem; margin-bottom: 0.5rem;">Request Consultation</h3>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; max-width: 500px; margin: 0 auto;">Choose the service you need and our team will contact you shortly.</p>
+          </div>
 
-            <div class="form-grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin:1.5rem 0;">
-              <div class="form-group">
-                <label for="c-email" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Email</label>
-                <input type="email" id="c-email" class="form-input" placeholder="email@address.com" required style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:4px; color:var(--text-primary); padding:0.75rem 1rem; font-size:0.9rem;" />
+          <form class="luxury-form" id="unified-consultation-form" onsubmit="submitUnifiedConsultation(event)">
+            
+            <!-- 1. Service Selection Segmented Cards -->
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+              <label style="display:block; font-size:0.7rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.75rem; text-align: center;">Select Service Required</label>
+              
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                <!-- Card 1: Property -->
+                <div class="service-select-card active" onclick="selectConsultationService('property', this)" style="
+                  border: 1px solid var(--gold-primary);
+                  background: rgba(212, 175, 55, 0.05);
+                  padding: 1.25rem 0.75rem;
+                  border-radius: 6px;
+                  text-align: center;
+                  cursor: pointer;
+                  transition: all 0.3s ease;
+                ">
+                  <span style="font-size: 1.5rem; display: block; margin-bottom: 0.25rem;">🏠</span>
+                  <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-primary);">Property</span>
+                </div>
+
+                <!-- Card 2: Loan -->
+                <div class="service-select-card" onclick="selectConsultationService('loan', this)" style="
+                  border: 1px solid var(--border-color);
+                  background: rgba(255, 255, 255, 0.02);
+                  padding: 1.25rem 0.75rem;
+                  border-radius: 6px;
+                  text-align: center;
+                  cursor: pointer;
+                  transition: all 0.3s ease;
+                ">
+                  <span style="font-size: 1.5rem; display: block; margin-bottom: 0.25rem;">🪙</span>
+                  <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Loans</span>
+                </div>
+
+                <!-- Card 3: Insurance -->
+                <div class="service-select-card" onclick="selectConsultationService('insurance', this)" style="
+                  border: 1px solid var(--border-color);
+                  background: rgba(255, 255, 255, 0.02);
+                  padding: 1.25rem 0.75rem;
+                  border-radius: 6px;
+                  text-align: center;
+                  cursor: pointer;
+                  transition: all 0.3s ease;
+                ">
+                  <span style="font-size: 1.5rem; display: block; margin-bottom: 0.25rem;">🛡️</span>
+                  <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Insurance</span>
+                </div>
               </div>
-              <div class="form-group">
-                <label for="c-phone" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Phone</label>
-                <input type="tel" id="c-phone" class="form-input" placeholder="+91 XXXXX XXXXX" required style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:4px; color:var(--text-primary); padding:0.75rem 1rem; font-size:0.9rem;" />
+
+              <input type="hidden" id="inq-service-type" value="property" />
+            </div>
+
+            <!-- 2. Common Fields -->
+            <div class="form-group" style="text-align: left;">
+              <label for="inq-name" style="font-size:0.7rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.05em; font-weight:600; margin-bottom:0.25rem;">Full Name</label>
+              <input type="text" id="inq-name" class="form-input" placeholder="Enter full name" required style="width: 100%; border-radius: 4px; background: var(--bg-color); border: 1px solid var(--border-color); padding: 0.75rem 1rem; color: var(--text-primary);" />
+            </div>
+
+            <div class="form-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0;">
+              <div class="form-group" style="text-align: left;">
+                <label for="inq-phone" style="font-size:0.7rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.05em; font-weight:600; margin-bottom:0.25rem;">Mobile Number</label>
+                <input type="tel" id="inq-phone" class="form-input" placeholder="+91 XXXXX XXXXX" required style="width: 100%; border-radius: 4px; background: var(--bg-color); border: 1px solid var(--border-color); padding: 0.75rem 1rem; color: var(--text-primary);" />
+              </div>
+              <div class="form-group" style="text-align: left;">
+                <label for="inq-email" style="font-size:0.7rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.05em; font-weight:600; margin-bottom:0.25rem;">Email Address (Optional)</label>
+                <input type="email" id="inq-email" class="form-input" placeholder="email@address.com" style="width: 100%; border-radius: 4px; background: var(--bg-color); border: 1px solid var(--border-color); padding: 0.75rem 1rem; color: var(--text-primary);" />
               </div>
             </div>
 
-            <div class="form-group" style="margin-bottom:1.5rem;">
-              <label for="c-budget" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Budget (₹)</label>
-              <input type="text" id="c-budget" class="form-input" placeholder="Enter your budget (e.g. ₹30 Crores)..." required style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:4px; color:var(--text-primary); padding:0.75rem 1rem; font-size:0.9rem;" />
+            <div class="form-group" style="text-align: left; margin-bottom: 1rem;">
+              <label for="inq-city" style="font-size:0.7rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.05em; font-weight:600; margin-bottom:0.25rem;">City</label>
+              <input type="text" id="inq-city" class="form-input" placeholder="Enter your city" required style="width: 100%; border-radius: 4px; background: var(--bg-color); border: 1px solid var(--border-color); padding: 0.75rem 1rem; color: var(--text-primary);" />
             </div>
 
-            <div class="form-group">
-              <label for="c-msg" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Message</label>
-              <textarea id="c-msg" class="form-input" rows="5" placeholder="Detail your requirements..." required style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:4px; color:var(--text-primary); padding:0.75rem 1rem; font-size:0.9rem; resize:vertical;"></textarea>
+            <!-- 3. Dynamic Fields -->
+            <!-- A. Property Specific -->
+            <div id="dynamic-property-fields" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+              <div class="form-group" style="text-align: left;">
+                <label for="inq-prop-type" style="font-size:0.7rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.05em; font-weight:600; margin-bottom:0.25rem;">Property Type</label>
+                <select id="inq-prop-type" class="form-input" style="width: 100%; border-radius: 4px; background: var(--bg-color); border: 1px solid var(--border-color); padding: 0.75rem 1rem; color: var(--text-primary);">
+                  <option value="Residential">Residential</option>
+                  <option value="Commercial">Commercial</option>
+                  <option value="Land / Plot">Land / Plot</option>
+                  <option value="Industrial">Industrial</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div class="form-group" style="text-align: left;">
+                <label for="inq-prop-loc" style="font-size:0.7rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.05em; font-weight:600; margin-bottom:0.25rem;">Property Location</label>
+                <input type="text" id="inq-prop-loc" class="form-input" placeholder="e.g. BKC, Lutyens' Delhi" style="width: 100%; border-radius: 4px; background: var(--bg-color); border: 1px solid var(--border-color); padding: 0.75rem 1rem; color: var(--text-primary);" />
+              </div>
             </div>
 
-            <button type="submit" class="btn-luxury" style="width:100%; border-radius:4px; margin-top:1.5rem;">SEND MESSAGE</button>
+            <!-- B. Loan Specific -->
+            <div id="dynamic-loan-fields" style="display: none; margin-bottom: 1rem;">
+              <div class="form-group" style="text-align: left;">
+                <label for="inq-loan-type" style="font-size:0.7rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.05em; font-weight:600; margin-bottom:0.25rem;">Loan Type</label>
+                <select id="inq-loan-type" class="form-input" style="width: 100%; border-radius: 4px; background: var(--bg-color); border: 1px solid var(--border-color); padding: 0.75rem 1rem; color: var(--text-primary);">
+                  <option value="Home Loan">Home Loan</option>
+                  <option value="Loan Against Property">Loan Against Property</option>
+                  <option value="Business Loan">Business Loan</option>
+                  <option value="Personal Loan">Personal Loan</option>
+                  <option value="Commercial Loan">Commercial Loan</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- C. Insurance Specific -->
+            <div id="dynamic-insurance-fields" style="display: none; margin-bottom: 1rem;">
+              <div class="form-group" style="text-align: left;">
+                <label for="inq-ins-type" style="font-size:0.7rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.05em; font-weight:600; margin-bottom:0.25rem;">Insurance Type</label>
+                <select id="inq-ins-type" class="form-input" style="width: 100%; border-radius: 4px; background: var(--bg-color); border: 1px solid var(--border-color); padding: 0.75rem 1rem; color: var(--text-primary);">
+                  <option value="Health Insurance">Health Insurance</option>
+                  <option value="Life Insurance">Life Insurance</option>
+                  <option value="Motor Insurance">Motor Insurance</option>
+                  <option value="Property Insurance">Property Insurance</option>
+                  <option value="Business Insurance">Business Insurance</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- 4. Common Requirement Message -->
+            <div class="form-group" style="text-align: left; margin-bottom: 1rem;">
+              <label for="inq-msg" style="font-size:0.7rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.05em; font-weight:600; margin-bottom:0.25rem;">Message / Requirement</label>
+              <textarea id="inq-msg" class="form-input" rows="4" placeholder="Describe your requirement, property interest, loan needs, insurance needs, or any questions." required style="width: 100%; border-radius: 4px; background: var(--bg-color); border: 1px solid var(--border-color); padding: 0.75rem 1rem; color: var(--text-primary); resize: vertical;"></textarea>
+            </div>
+
+            <button type="submit" class="btn-luxury" style="width:100%; border-radius:4px; margin-top:1rem; padding: 0.8rem 1.5rem; font-weight: 600; letter-spacing: 0.05em;">REQUEST CONSULTATION</button>
           </form>
         </div>
 
@@ -278,27 +384,77 @@
 
 
     // Contact Form Ingress Submission via Supabase
-    async function submitContactQuery(event) {
+    function selectConsultationService(serviceType, element) {
+      // Update hidden field
+      document.getElementById('inq-service-type').value = serviceType;
+
+      // Toggle active card styles
+      document.querySelectorAll('.service-select-card').forEach(card => {
+        card.style.borderColor = 'var(--border-color)';
+        card.style.background = 'rgba(255, 255, 255, 0.02)';
+        card.querySelector('span:last-child').style.color = 'var(--text-secondary)';
+      });
+
+      element.style.borderColor = 'var(--gold-primary)';
+      element.style.background = 'rgba(212, 175, 55, 0.05)';
+      element.querySelector('span:last-child').style.color = 'var(--text-primary)';
+
+      // Toggle dynamic fields visibility
+      const propFields = document.getElementById('dynamic-property-fields');
+      const loanFields = document.getElementById('dynamic-loan-fields');
+      const insFields = document.getElementById('dynamic-insurance-fields');
+
+      if (serviceType === 'property') {
+        if (propFields) propFields.style.display = 'grid';
+        if (loanFields) loanFields.style.display = 'none';
+        if (insFields) insFields.style.display = 'none';
+      } else if (serviceType === 'loan') {
+        if (propFields) propFields.style.display = 'none';
+        if (loanFields) loanFields.style.display = 'block';
+        if (insFields) insFields.style.display = 'none';
+      } else if (serviceType === 'insurance') {
+        if (propFields) propFields.style.display = 'none';
+        if (loanFields) loanFields.style.display = 'none';
+        if (insFields) insFields.style.display = 'block';
+      }
+    }
+
+    async function submitUnifiedConsultation(event) {
       event.preventDefault();
 
-      const name = document.getElementById('c-name').value.trim();
-      const email = document.getElementById('c-email').value.trim();
-      const phone = document.getElementById('c-phone').value.trim();
-      const budget = document.getElementById('c-budget').value.trim();
-      const message = document.getElementById('c-msg').value.trim();
+      const serviceType = document.getElementById('inq-service-type').value;
+      const name = document.getElementById('inq-name').value.trim();
+      const phone = document.getElementById('inq-phone').value.trim();
+      const email = document.getElementById('inq-email').value.trim() || "Not Provided";
+      const city = document.getElementById('inq-city').value.trim();
+      const rawMessage = document.getElementById('inq-msg').value.trim();
+
+      // Construct message payload based on service type selection
+      let messageWithDetails = "";
+      if (serviceType === 'property') {
+        const propType = document.getElementById('inq-prop-type').value;
+        const propLoc = document.getElementById('inq-prop-loc').value.trim() || "Not Specified";
+        messageWithDetails = `Service: Property Inquiry\nCity: ${city}\nProperty Type: ${propType}\nLocation Interest: ${propLoc}\n\nClient Message:\n${rawMessage}`;
+      } else if (serviceType === 'loan') {
+        const loanType = document.getElementById('inq-loan-type').value;
+        messageWithDetails = `[LOAN APPLICATION] Service: Loan Assistance\nCity: ${city}\nLoan Type: ${loanType}\n\nClient Message:\n${rawMessage}`;
+      } else if (serviceType === 'insurance') {
+        const insType = document.getElementById('inq-ins-type').value;
+        messageWithDetails = `[INSURANCE APPLICATION] Service: Insurance Assistance\nCity: ${city}\nInsurance Type: ${insType}\n\nClient Message:\n${rawMessage}`;
+      }
 
       const btn = event.target.querySelector('button[type="submit"]');
       const originalText = btn.textContent;
       btn.disabled = true;
-      btn.textContent = "Sending...";
+      btn.textContent = "Sending Request...";
 
       if (window.supabaseClient) {
         const { data, error } = await window.supabaseClient.from('inquiries').insert([{
           name: name,
           email: email,
           phone: phone,
-          budget: budget,
-          message: message,
+          budget: 0,
+          message: messageWithDetails,
           status: 'pending',
           created_at: new Date().toISOString()
         }]);
@@ -311,8 +467,9 @@
           return;
         }
 
-        // Reset the form
+        // Reset form
         event.target.reset();
+        selectConsultationService('property', document.querySelector('.service-select-card'));
 
         // Spawn luxury modal alert
         const alertBox = document.createElement('div');
@@ -334,8 +491,8 @@
         `;
         alertBox.innerHTML = `
           <div style="font-size:3rem; margin-bottom:1.5rem;">📜</div>
-          <h3 style="font-family:var(--font-serif); font-size:1.8rem; color:var(--gold-primary); margin-bottom:1rem;">Message Sent</h3>
-          <p style="color:var(--text-secondary); font-size:0.95rem; line-height:1.6; margin-bottom:2rem;">Thank you <strong>${name}</strong>, your message has been received. Our team will get back to you within 4 hours.</p>
+          <h3 style="font-family:var(--font-serif); font-size:1.8rem; color:var(--gold-primary); margin-bottom:1rem;">Request Received</h3>
+          <p style="color:var(--text-secondary); font-size:0.95rem; line-height:1.6; margin-bottom:2rem;">Thank you for your inquiry. Our team will review your request and contact you shortly.</p>
           <button class="btn-luxury" style="padding:0.75rem 2.5rem;" onclick="this.parentElement.remove()">OK</button>
         `;
         
@@ -359,7 +516,8 @@
           btn.disabled = false;
           btn.textContent = originalText;
           event.target.reset();
-          alert("General query simulated successfully!");
+          selectConsultationService('property', document.querySelector('.service-select-card'));
+          alert("Consultation query simulated successfully!");
         }, 800);
       }
     }

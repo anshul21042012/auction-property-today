@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login | AuctionPropertyToday</title>
+  
+  <!-- Critical Stylesheets -->
+  <link rel="stylesheet" href="styles/index.css">
+  <link rel="stylesheet" href="styles/components.css">
+  <link rel="stylesheet" href="styles/pages.css">
+
+  <!-- Immediate Theme Lock -->
+  <script>
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    // Redirect to Admin instantly if already logged in (Supabase session key audit)
+    const sessionKey = "sb-xqhrjhvbustdwmrmikya-auth-token";
+    const isAdmin = localStorage.getItem('isAdmin') === 'true';
+    if (localStorage.getItem(sessionKey) && isAdmin) {
+      window.location.replace("admin.html");
+    }
+  </script>
+
+  <!-- Supabase Live Ingress -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="services/supabaseClient.js"></script>
+</head>
+<body>
+
+  <!-- Login Main Ingress Area -->
+  <main class="login-page-wrapper">
+    <div class="hero-bg" style="filter: brightness(0.2) contrast(1.2);">
+      <img src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1800&q=80" alt="Luxury Interior" class="hero-img">
+    </div>
+    <div class="hero-overlay" style="background:radial-gradient(circle, rgba(7,7,8,0.6) 0%, rgba(7,7,8,0.95) 100%);"></div>
+
+    <div class="login-glass-card glassmorphism">
+      <span class="apple-subtitle" style="font-size:0.75rem; letter-spacing:0.2em;">Admin Portal</span>
+      <h2 class="luxury-heading" style="margin-bottom:1.5rem;">Login</h2>
+      
+      <!-- Premium alert banner -->
+      <div id="login-error-banner" style="display:none; background:rgba(226, 76, 76, 0.08); border:1px solid rgba(226, 76, 76, 0.2); border-radius:4px; padding:0.85rem; font-size:0.85rem; color:var(--status-cancelled); margin-bottom:1.5rem; text-align:center;">
+        Login failed. Invalid credentials.
+      </div>
+
+      <form id="portal-login-form" class="luxury-form" onsubmit="executePortalIngress(event)">
+        <div class="form-group" style="text-align:left;">
+          <label for="admin-email">Email</label>
+          <input type="email" id="admin-email" class="form-input" placeholder="email@example.com" required />
+        </div>
+        
+        <div class="form-group" style="text-align:left;">
+          <label for="admin-pass">Password</label>
+          <input type="password" id="admin-pass" class="form-input" placeholder="••••••••••••" required />
+        </div>
+        
+        <button type="submit" class="btn-luxury" style="width:100%; border-radius:4px; margin-top:1.5rem;">Login</button>
+      </form>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="components/navbar.js"></script>
+  <script src="components/footer.js"></script>
+
+  <!-- Authentication handlers -->
+  <script>
+    async function executePortalIngress(event) {
+      event.preventDefault();
+
+      const email = document.getElementById('admin-email').value.trim();
+      const password = document.getElementById('admin-pass').value.trim();
+      const errorBanner = document.getElementById('login-error-banner');
+      const btn = event.target.querySelector('button[type="submit"]');
+
+      if (!window.supabaseClient) {
+        errorBanner.textContent = "Supabase connection is not loaded.";
+        errorBanner.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "Logging in...";
+
+      const { data, error } = await window.supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      btn.disabled = false;
+      btn.textContent = "Login";
+
+      if (!error) {
+        errorBanner.style.display = 'none';
+        
+        // Admin login success
+        localStorage.setItem('isAdmin', 'true');
+        localStorage.removeItem('clientSession');
+        
+        btn.style.background = 'var(--status-accepted)';
+        btn.textContent = "Login Approved";
+        
+        setTimeout(() => {
+          window.location.replace("admin.html");
+        }, 500);
+      } else {
+        // Mismatch visualizer
+        errorBanner.textContent = `Login failed: ${error.message}`;
+        errorBanner.style.display = 'block';
+        
+        // Dynamic shimmer wiggle
+        const card = document.querySelector('.login-glass-card');
+        card.style.transform = 'scale(0.98)';
+        card.style.transition = 'all 0.1s ease';
+        setTimeout(() => {
+          card.style.transform = 'none';
+        }, 150);
+      }
+    }
+  </script>
+</body>
+</html>

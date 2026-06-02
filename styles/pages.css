@@ -862,23 +862,25 @@
 
 /* LOGIN PAGE */
 .login-page-wrapper {
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 120px 2rem 4rem 2rem;
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .login-glass-card {
   width: 100%;
   max-width: 450px;
   border-radius: 8px;
-  padding: 4rem 3rem;
+  padding: 3rem 2.5rem;
   position: relative;
   z-index: 10;
   text-align: center;
+  margin: auto;
 }
 
 .login-glass-card h2 {

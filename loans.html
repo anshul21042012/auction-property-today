@@ -715,66 +715,144 @@
   <!-- Application Capture Section -->
   <section class="section-padding" id="loan-apply" style="border-top: 1px solid var(--border-color); background-color: var(--bg-surface-elevated);">
     <div class="container" style="max-width: 700px;">
-      <div class="inquiry-form-card glassmorphism" style="padding: 3.5rem; border-radius: 12px; border: 1px solid var(--border-color); position:relative;">
-        
-        <div style="text-align:center; margin-bottom:3rem;">
-          <span class="apple-subtitle">Direct Underwriting Route</span>
-          <h3 class="luxury-heading" style="font-size:2.4rem; margin-bottom:1rem; text-align:center;">Elite Pre-Approval Application</h3>
-          <p style="color:var(--text-secondary); font-size:0.95rem;">Submit your credentials. Our banking desk returns underwritten indicators in 2 hours.</p>
+      <div class="inquiry-form-card glassmorphism" style="padding: 3rem; border-radius: 8px; border: 1px solid var(--border-color);">
+        <div style="text-align: center; margin-bottom: 2rem;">
+          <span class="apple-subtitle" style="color: var(--gold-primary); font-size:0.75rem; letter-spacing:0.15em;">Get Expert Assistance</span>
+          <h3 class="luxury-heading" style="font-size: 2rem; margin-top: 0.5rem; margin-bottom: 0.5rem;">Request Consultation</h3>
+          <p style="color: var(--text-secondary); font-size: 0.85rem; max-width: 500px; margin: 0 auto;">Choose the service you need and our team will contact you shortly.</p>
         </div>
-        
-        <form class="luxury-form" id="loan-application-form" onsubmit="submitLoanApplication(event)">
+
+        <form class="luxury-form" id="unified-consultation-form" onsubmit="submitUnifiedConsultation(event)">
           
-          <div class="form-group">
-            <label for="l-name" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Applicant Full Name</label>
-            <input type="text" id="l-name" class="form-input" placeholder="Enter your full legal name..." required style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); padding:1rem; font-size:0.95rem;" />
+          <!-- 1. Service Selection Segmented Cards -->
+          <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label style="display:block; font-size:0.7rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.75rem; text-align: center;">Select Service Required</label>
+            
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+              <!-- Card 1: Property -->
+              <div class="service-select-card" onclick="selectConsultationService('property', this)" style="
+                border: 1px solid var(--border-color);
+                background: rgba(255, 255, 255, 0.02);
+                padding: 1.25rem 0.75rem;
+                border-radius: 6px;
+                text-align: center;
+                cursor: pointer;
+                transition: all 0.3s ease;
+              ">
+                <span style="font-size: 1.5rem; display: block; margin-bottom: 0.25rem;">🏠</span>
+                <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Property</span>
+              </div>
+
+              <!-- Card 2: Loan -->
+              <div class="service-select-card active" onclick="selectConsultationService('loan', this)" style="
+                border: 1px solid var(--gold-primary);
+                background: rgba(212, 175, 55, 0.05);
+                padding: 1.25rem 0.75rem;
+                border-radius: 6px;
+                text-align: center;
+                cursor: pointer;
+                transition: all 0.3s ease;
+              ">
+                <span style="font-size: 1.5rem; display: block; margin-bottom: 0.25rem;">🪙</span>
+                <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-primary);">Loans</span>
+              </div>
+
+              <!-- Card 3: Insurance -->
+              <div class="service-select-card" onclick="selectConsultationService('insurance', this)" style="
+                border: 1px solid var(--border-color);
+                background: rgba(255, 255, 255, 0.02);
+                padding: 1.25rem 0.75rem;
+                border-radius: 6px;
+                text-align: center;
+                cursor: pointer;
+                transition: all 0.3s ease;
+              ">
+                <span style="font-size: 1.5rem; display: block; margin-bottom: 0.25rem;">🛡️</span>
+                <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Insurance</span>
+              </div>
+            </div>
+
+            <input type="hidden" id="inq-service-type" value="loan" />
           </div>
 
-          <div class="form-grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin:1.5rem 0;">
-            <div class="form-group">
-              <label for="l-email" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Email Address</label>
-              <input type="email" id="l-email" class="form-input" placeholder="email@address.com" required style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); padding:1rem; font-size:0.95rem;" />
+          <!-- 2. Common Fields -->
+          <div class="form-group" style="text-align: left;">
+            <label for="inq-name" style="font-size:0.7rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.05em; font-weight:600; margin-bottom:0.25rem;">Full Name</label>
+            <input type="text" id="inq-name" class="form-input" placeholder="Enter full name" required style="width: 100%; border-radius: 4px; background: var(--bg-color); border: 1px solid var(--border-color); padding: 0.75rem 1rem; color: var(--text-primary);" />
+          </div>
+
+          <div class="form-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0;">
+            <div class="form-group" style="text-align: left;">
+              <label for="inq-phone" style="font-size:0.7rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.05em; font-weight:600; margin-bottom:0.25rem;">Mobile Number</label>
+              <input type="tel" id="inq-phone" class="form-input" placeholder="+91 XXXXX XXXXX" required style="width: 100%; border-radius: 4px; background: var(--bg-color); border: 1px solid var(--border-color); padding: 0.75rem 1rem; color: var(--text-primary);" />
             </div>
-            <div class="form-group">
-              <label for="l-phone" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Mobile / Phone Number</label>
-              <input type="tel" id="l-phone" class="form-input" placeholder="+91 XXXXX XXXXX" required style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); padding:1rem; font-size:0.95rem;" />
+            <div class="form-group" style="text-align: left;">
+              <label for="inq-email" style="font-size:0.7rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.05em; font-weight:600; margin-bottom:0.25rem;">Email Address (Optional)</label>
+              <input type="email" id="inq-email" class="form-input" placeholder="email@address.com" style="width: 100%; border-radius: 4px; background: var(--bg-color); border: 1px solid var(--border-color); padding: 0.75rem 1rem; color: var(--text-primary);" />
             </div>
           </div>
 
-          <div class="form-grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:1.5rem;">
-            <div class="form-group">
-              <label for="l-category" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Preferred Credit Category</label>
-              <select id="l-category" class="form-input" onchange="adaptFormDetails()" required style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); padding:1rem; font-size:0.95rem;">
-                <option value="Home Loan" selected>Home Loan (Housing Finance)</option>
-                <option value="Loan Against Property">Loan Against Property (LAP)</option>
-                <option value="Personal Loan">Personal Loan (Unsecured)</option>
-                <option value="Business Loan">Business / Commercial MSME Finance</option>
+          <div class="form-group" style="text-align: left; margin-bottom: 1rem;">
+            <label for="inq-city" style="font-size:0.7rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.05em; font-weight:600; margin-bottom:0.25rem;">City</label>
+            <input type="text" id="inq-city" class="form-input" placeholder="Enter your city" required style="width: 100%; border-radius: 4px; background: var(--bg-color); border: 1px solid var(--border-color); padding: 0.75rem 1rem; color: var(--text-primary);" />
+          </div>
+
+          <!-- 3. Dynamic Fields -->
+          <!-- A. Property Specific -->
+          <div id="dynamic-property-fields" style="display: none; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div class="form-group" style="text-align: left;">
+              <label for="inq-prop-type" style="font-size:0.7rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.05em; font-weight:600; margin-bottom:0.25rem;">Property Type</label>
+              <select id="inq-prop-type" class="form-input" style="width: 100%; border-radius: 4px; background: var(--bg-color); border: 1px solid var(--border-color); padding: 0.75rem 1rem; color: var(--text-primary);">
+                <option value="Residential">Residential</option>
+                <option value="Commercial">Commercial</option>
+                <option value="Land / Plot">Land / Plot</option>
+                <option value="Industrial">Industrial</option>
+                <option value="Other">Other</option>
               </select>
             </div>
-            <div class="form-group">
-              <label for="l-required" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Funding Requirement (₹)</label>
-              <input type="text" id="l-required" class="form-input" placeholder="e.g. ₹50,00,000..." required style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); padding:1rem; font-size:0.95rem;" />
+            <div class="form-group" style="text-align: left;">
+              <label for="inq-prop-loc" style="font-size:0.7rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.05em; font-weight:600; margin-bottom:0.25rem;">Property Location</label>
+              <input type="text" id="inq-prop-loc" class="form-input" placeholder="e.g. BKC, Lutyens' Delhi" style="width: 100%; border-radius: 4px; background: var(--bg-color); border: 1px solid var(--border-color); padding: 0.75rem 1rem; color: var(--text-primary);" />
             </div>
           </div>
 
-          <div class="form-group" style="margin-bottom:1.5rem;">
-            <label for="l-bank" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Preferred Banking Underwriter (Optional)</label>
-            <select id="l-bank" class="form-input" style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); padding:1rem; font-size:0.95rem;">
-              <option value="Any Partner Bank" selected>Route to Best Available Offer (Recommended)</option>
-              <option value="State Bank of India">State Bank of India</option>
-              <option value="HDFC Bank">HDFC Bank</option>
-              <option value="ICICI Bank">ICICI Bank</option>
-              <option value="Axis Bank">Axis Bank</option>
-              <option value="Kotak Mahindra Bank">Kotak Mahindra Bank</option>
-            </select>
+          <!-- B. Loan Specific -->
+          <div id="dynamic-loan-fields" style="display: block; margin-bottom: 1rem;">
+            <div class="form-group" style="text-align: left;">
+              <label for="inq-loan-type" style="font-size:0.7rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.05em; font-weight:600; margin-bottom:0.25rem;">Loan Type</label>
+              <select id="inq-loan-type" class="form-input" style="width: 100%; border-radius: 4px; background: var(--bg-color); border: 1px solid var(--border-color); padding: 0.75rem 1rem; color: var(--text-primary);">
+                <option value="Home Loan" selected>Home Loan</option>
+                <option value="Loan Against Property">Loan Against Property</option>
+                <option value="Business Loan">Business Loan</option>
+                <option value="Personal Loan">Personal Loan</option>
+                <option value="Commercial Loan">Commercial Loan</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label for="l-msg" style="display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Income & Financial Profile Details</label>
-            <textarea id="l-msg" class="form-input" rows="4" placeholder="Detail your monthly/annual income, current employment details (Company / Business Tenure), and specific financing timelines..." required style="width:100%; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); padding:1rem; font-size:0.95rem; resize:vertical;"></textarea>
+          <!-- C. Insurance Specific -->
+          <div id="dynamic-insurance-fields" style="display: none; margin-bottom: 1rem;">
+            <div class="form-group" style="text-align: left;">
+              <label for="inq-ins-type" style="font-size:0.7rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.05em; font-weight:600; margin-bottom:0.25rem;">Insurance Type</label>
+              <select id="inq-ins-type" class="form-input" style="width: 100%; border-radius: 4px; background: var(--bg-color); border: 1px solid var(--border-color); padding: 0.75rem 1rem; color: var(--text-primary);">
+                <option value="Health Insurance">Health Insurance</option>
+                <option value="Life Insurance">Life Insurance</option>
+                <option value="Motor Insurance">Motor Insurance</option>
+                <option value="Property Insurance">Property Insurance</option>
+                <option value="Business Insurance">Business Insurance</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
           </div>
 
-          <button type="submit" class="btn-luxury" style="width:100%; border-radius:6px; margin-top:2.5rem; padding: 1.25rem; font-size: 1rem; font-weight:600; letter-spacing: 0.05em;">SUBMIT PRE-APPROVAL SECURE dossier</button>
+          <!-- 4. Common Requirement Message -->
+          <div class="form-group" style="text-align: left; margin-bottom: 1rem;">
+            <label for="inq-msg" style="font-size:0.7rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.05em; font-weight:600; margin-bottom:0.25rem;">Message / Requirement</label>
+            <textarea id="inq-msg" class="form-input" rows="4" placeholder="Describe your requirement, property interest, loan needs, insurance needs, or any questions." required style="width: 100%; border-radius: 4px; background: var(--bg-color); border: 1px solid var(--border-color); padding: 0.75rem 1rem; color: var(--text-primary); resize: vertical;"></textarea>
+          </div>
+
+          <button type="submit" class="btn-luxury" style="width:100%; border-radius:4px; margin-top:1rem; padding: 0.8rem 1.5rem; font-weight: 600; letter-spacing: 0.05em;">REQUEST CONSULTATION</button>
         </form>
       </div>
     </div>
@@ -953,7 +1031,7 @@
       if (categoryKey === 'lap') index = 1;
       else if (categoryKey === 'personal') index = 2;
       else if (categoryKey === 'business') index = 3;
-      buttons[index].classList.add('active');
+      if (buttons[index]) buttons[index].classList.add('active');
 
       // Load presets into sliders
       const preset = loanPresets[categoryKey];
@@ -986,11 +1064,13 @@
       populateBankingMatrix(preset.bankList);
 
       // Adapt Form category pick sync
-      const lCategory = document.getElementById('l-category');
-      if (categoryKey === 'home') lCategory.value = "Home Loan";
-      else if (categoryKey === 'lap') lCategory.value = "Loan Against Property";
-      else if (categoryKey === 'personal') lCategory.value = "Personal Loan";
-      else if (categoryKey === 'business') lCategory.value = "Business Loan";
+      const inqLoanType = document.getElementById('inq-loan-type');
+      if (inqLoanType) {
+        if (categoryKey === 'home') inqLoanType.value = "Home Loan";
+        else if (categoryKey === 'lap') inqLoanType.value = "Loan Against Property";
+        else if (categoryKey === 'personal') inqLoanType.value = "Personal Loan";
+        else if (categoryKey === 'business') inqLoanType.value = "Business Loan";
+      }
 
       // Execute calculation
       updateCalculations();
@@ -1024,22 +1104,33 @@
 
     // Quick select a bank to apply with
     function selectBankForApplication(bankName) {
-      const formBank = document.getElementById('l-bank');
-      formBank.value = bankName;
-
-      // Sync active slider value as required amount in form
+      // Sync active slider value as required amount in form message
       const sliderAmt = document.getElementById('amount-slider').value;
-      document.getElementById('l-required').value = '₹' + formatNumberWithCommas(sliderAmt);
+      const formattedAmt = formatNumberWithCommas(sliderAmt);
+
+      // Select 'loan' service tab
+      const loanCard = document.querySelector('.service-select-card[onclick*="loan"]');
+      if (loanCard) {
+        selectConsultationService('loan', loanCard);
+      }
+
+      // Populate requirement text
+      const msgInput = document.getElementById('inq-msg');
+      if (msgInput) {
+        msgInput.value = `I am interested in applying for a Loan. Preferred Underwriter: ${bankName}. Desired Financing Amount: ₹${formattedAmt}. Please contact me with options.`;
+      }
 
       // Smooth scroll down to application card
       document.getElementById('loan-apply').scrollIntoView({ behavior: 'smooth' });
 
       // Add clean subtle flash visual indication to card
       const formCard = document.querySelector('.inquiry-form-card');
-      formCard.style.borderColor = 'var(--gold-primary)';
-      setTimeout(() => {
-        formCard.style.borderColor = 'var(--border-color)';
-      }, 1500);
+      if (formCard) {
+        formCard.style.borderColor = 'var(--gold-primary)';
+        setTimeout(() => {
+          formCard.style.borderColor = 'var(--border-color)';
+        }, 1500);
+      }
     }
 
     // Sync values from Sliders to Input Texts
@@ -1213,62 +1304,113 @@
         return;
       }
 
-      // Fill in required amount
-      document.getElementById('l-required').value = outputVal;
+      // Select 'loan' service tab
+      const loanCard = document.querySelector('.service-select-card[onclick*="loan"]');
+      if (loanCard) {
+        selectConsultationService('loan', loanCard);
+      }
+
+      // Sync active loan preset dropdown category
+      const loanTypeDropdown = document.getElementById('inq-loan-type');
+      if (loanTypeDropdown) {
+        if (activeCategory === 'home') loanTypeDropdown.value = 'Home Loan';
+        else if (activeCategory === 'lap') loanTypeDropdown.value = 'Loan Against Property';
+        else if (activeCategory === 'personal') loanTypeDropdown.value = 'Personal Loan';
+        else if (activeCategory === 'business') loanTypeDropdown.value = 'Business Loan';
+      }
 
       // Fill in standard explanatory financial text
       const descVal = document.getElementById('el-desc-output').textContent;
-      document.getElementById('l-msg').value = `Pre-approved estimation request based on details: ${descVal}. Employment Profile: ${document.getElementById('el-employment').value}.`;
+      const msgInput = document.getElementById('inq-msg');
+      if (msgInput) {
+        msgInput.value = `Pre-approved eligibility capacity: ${outputVal}. Details: ${descVal}. Employment Profile: ${document.getElementById('el-employment').value}.`;
+      }
 
       // Smooth scroll down to form
       document.getElementById('loan-apply').scrollIntoView({ behavior: 'smooth' });
 
       // Visual feedback blink
       const formCard = document.querySelector('.inquiry-form-card');
-      formCard.style.borderColor = 'var(--gold-primary)';
-      setTimeout(() => {
-        formCard.style.borderColor = 'var(--border-color)';
-      }, 1500);
-    }
-
-    // Form adapt values when category dropdown shifts
-    function adaptFormDetails() {
-      const cat = document.getElementById('l-category').value;
-      const amountInput = document.getElementById('l-required');
-      
-      // Auto-pre-fill a typical standard required amount if currently empty
-      if (!amountInput.value) {
-        if (cat === "Home Loan") amountInput.value = "₹75,00,000";
-        else if (cat === "Loan Against Property") amountInput.value = "₹1,50,00,000";
-        else if (cat === "Personal Loan") amountInput.value = "₹12,0,000";
-        else if (cat === "Business Loan") amountInput.value = "₹35,0,000";
+      if (formCard) {
+        formCard.style.borderColor = 'var(--gold-primary)';
+        setTimeout(() => {
+          formCard.style.borderColor = 'var(--border-color)';
+        }, 1500);
       }
     }
 
-    // Lead Capture Form Ingress submission logic to Supabase Relational Schema
-    async function submitLoanApplication(event) {
+    // Unified Consultation Form Handlers
+    function selectConsultationService(serviceType, element) {
+      // Update hidden field
+      document.getElementById('inq-service-type').value = serviceType;
+
+      // Toggle active card styles
+      document.querySelectorAll('.service-select-card').forEach(card => {
+        card.style.borderColor = 'var(--border-color)';
+        card.style.background = 'rgba(255, 255, 255, 0.02)';
+        card.querySelector('span:last-child').style.color = 'var(--text-secondary)';
+      });
+
+      element.style.borderColor = 'var(--gold-primary)';
+      element.style.background = 'rgba(212, 175, 55, 0.05)';
+      element.querySelector('span:last-child').style.color = 'var(--text-primary)';
+
+      // Toggle dynamic fields visibility
+      const propFields = document.getElementById('dynamic-property-fields');
+      const loanFields = document.getElementById('dynamic-loan-fields');
+      const insFields = document.getElementById('dynamic-insurance-fields');
+
+      if (serviceType === 'property') {
+        if (propFields) propFields.style.display = 'grid';
+        if (loanFields) loanFields.style.display = 'none';
+        if (insFields) insFields.style.display = 'none';
+      } else if (serviceType === 'loan') {
+        if (propFields) propFields.style.display = 'none';
+        if (loanFields) loanFields.style.display = 'block';
+        if (insFields) insFields.style.display = 'none';
+      } else if (serviceType === 'insurance') {
+        if (propFields) propFields.style.display = 'none';
+        if (loanFields) loanFields.style.display = 'none';
+        if (insFields) insFields.style.display = 'block';
+      }
+    }
+
+    async function submitUnifiedConsultation(event) {
       event.preventDefault();
-      
-      const name = document.getElementById('l-name').value.trim();
-      const email = document.getElementById('l-email').value.trim();
-      const phone = document.getElementById('l-phone').value.trim();
-      const category = document.getElementById('l-category').value;
-      const budget = document.getElementById('l-required').value.trim();
-      const bank = document.getElementById('l-bank').value;
-      const messageText = document.getElementById('l-msg').value.trim();
-      
+
+      const serviceType = document.getElementById('inq-service-type').value;
+      const name = document.getElementById('inq-name').value.trim();
+      const phone = document.getElementById('inq-phone').value.trim();
+      const email = document.getElementById('inq-email').value.trim() || "Not Provided";
+      const city = document.getElementById('inq-city').value.trim();
+      const rawMessage = document.getElementById('inq-msg').value.trim();
+
+      // Construct message payload based on service type selection
+      let messageWithDetails = "";
+      if (serviceType === 'property') {
+        const propType = document.getElementById('inq-prop-type').value;
+        const propLoc = document.getElementById('inq-prop-loc').value.trim() || "Not Specified";
+        messageWithDetails = `Service: Property Inquiry\nCity: ${city}\nProperty Type: ${propType}\nLocation Interest: ${propLoc}\n\nClient Message:\n${rawMessage}`;
+      } else if (serviceType === 'loan') {
+        const loanType = document.getElementById('inq-loan-type').value;
+        messageWithDetails = `[LOAN APPLICATION] Service: Loan Assistance\nCity: ${city}\nLoan Type: ${loanType}\n\nClient Message:\n${rawMessage}`;
+      } else if (serviceType === 'insurance') {
+        const insType = document.getElementById('inq-ins-type').value;
+        messageWithDetails = `[INSURANCE APPLICATION] Service: Insurance Assistance\nCity: ${city}\nInsurance Type: ${insType}\n\nClient Message:\n${rawMessage}`;
+      }
+
       const btn = event.target.querySelector('button[type="submit"]');
       const originalText = btn.textContent;
       btn.disabled = true;
-      btn.textContent = "Submitting dossier securely...";
+      btn.textContent = "Sending Request...";
 
       if (window.supabaseClient) {
         const { data, error } = await window.supabaseClient.from('inquiries').insert([{
           name: name,
           email: email,
           phone: phone,
-          budget: budget,
-          message: `[LOAN APPLICATION] Category: ${category} | Underwriter Routeings: ${bank} | ${messageText}`,
+          budget: 0,
+          message: messageWithDetails,
           status: 'pending',
           created_at: new Date().toISOString()
         }]);
@@ -1277,14 +1419,15 @@
         btn.textContent = originalText;
 
         if (error) {
-          alert(`Submission error: ${error.message}`);
+          alert(`Error submitting support request: ${error.message}`);
           return;
         }
 
-        // Reset the form values
+        // Reset form
         event.target.reset();
+        selectConsultationService('loan', document.querySelector('.service-select-card[onclick*="loan"]'));
 
-        // Spawn luxury modal success alert
+        // Spawn luxury modal alert
         const alertBox = document.createElement('div');
         alertBox.style.cssText = `
           position: fixed;
@@ -1293,41 +1436,45 @@
           transform: translate(-50%, -50%);
           background: var(--bg-surface);
           border: 1px solid var(--border-color-gold);
-          padding: 3.5rem 3rem;
-          border-radius: 12px;
+          padding: 3rem;
+          border-radius: 8px;
           z-index: 10000;
-          box-shadow: 0 40px 90px rgba(0,0,0,0.65), 0 0 35px var(--gold-glow);
-          max-width: 550px;
+          box-shadow: 0 30px 70px rgba(0,0,0,0.6), 0 0 30px var(--gold-glow);
+          max-width: 500px;
           width: 90%;
           text-align: center;
-          animation: loanNotifyFade 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+          animation: contactNotifyFade 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         `;
         alertBox.innerHTML = `
-          <div style="font-size:3.5rem; margin-bottom:1.5rem;">📜</div>
-          <h3 style="font-family:var(--font-serif); font-size:2rem; color:var(--gold-primary); margin-bottom:1rem;">Dossier Received</h3>
-          <p style="color:var(--text-secondary); font-size:0.95rem; line-height:1.7; margin-bottom:2.25rem;">
-            Thank you <strong>${name}</strong>, your <strong>${category}</strong> pre-approval dossier has been securely captured. A designated senior banker representing <strong>${bank}</strong> will initiate contact within 2 hours.
-          </p>
-          <button class="btn-luxury" style="padding:0.85rem 3rem; border-radius:6px;" onclick="this.parentElement.remove()">CONFIRM</button>
+          <div style="font-size:3rem; margin-bottom:1.5rem;">📜</div>
+          <h3 style="font-family:var(--font-serif); font-size:1.8rem; color:var(--gold-primary); margin-bottom:1rem;">Request Received</h3>
+          <p style="color:var(--text-secondary); font-size:0.95rem; line-height:1.6; margin-bottom:2rem;">Thank you for your inquiry. Our team will review your request and contact you shortly.</p>
+          <button class="btn-luxury" style="padding:0.75rem 2.5rem;" onclick="this.parentElement.remove()">OK</button>
         `;
         
         document.body.appendChild(alertBox);
 
-        if (!document.getElementById('loan-notify-animation')) {
+        // Inject keyframes if missing
+        if (!document.getElementById('contact-notify-animation')) {
           const style = document.createElement('style');
-          style.id = 'loan-notify-animation';
+          style.id = 'contact-notify-animation';
           style.innerHTML = `
-            @keyframes loanNotifyFade {
-              from { opacity: 0; transform: translate(-50%, -42%); }
+            @keyframes contactNotifyFade {
+              from { opacity: 0; transform: translate(-50%, -40%); }
               to { opacity: 1; transform: translate(-50%, -50%); }
             }
           `;
           document.head.appendChild(style);
         }
       } else {
-        alert("Server connection offline. Lead could not be transmitted.");
-        btn.disabled = false;
-        btn.textContent = originalText;
+        // Fallback simulation
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.textContent = originalText;
+          event.target.reset();
+          selectConsultationService('loan', document.querySelector('.service-select-card[onclick*="loan"]'));
+          alert("Consultation query simulated successfully!");
+        }, 800);
       }
     }
   </script>

@@ -141,7 +141,7 @@
     const isAdmin = localStorage.getItem('isAdmin') === 'true';
     if (!localStorage.getItem(sessionKey) || !isAdmin) {
       localStorage.removeItem('isAdmin');
-      window.location.replace("login.html");
+      window.location.replace("admin_login.html");
     }
   </script>
 
@@ -667,7 +667,7 @@
         if (error || !session || !isAdmin) {
           localStorage.removeItem("sb-xqhrjhvbustdwmrmikya-auth-token");
           localStorage.removeItem("isAdmin");
-          window.location.replace("login.html");
+          window.location.replace("admin_login.html");
         } else {
           // Dynamic profile mapping from real Supabase user email
           const email = session.user.email;
@@ -711,7 +711,7 @@
       }
       localStorage.removeItem("sb-xqhrjhvbustdwmrmikya-auth-token");
       localStorage.removeItem("isAdmin");
-      window.location.replace("login.html");
+      window.location.replace("admin_login.html");
     }
 
     // ----------------------------------------------------
@@ -1020,7 +1020,7 @@
       if (sessionError || !session) {
         console.error("[Auth Guard] No active admin session found before insert:", sessionError);
         showToast("Unauthorized session. Please login again.", "error");
-        setTimeout(() => window.location.replace("login.html"), 1500);
+        setTimeout(() => window.location.replace("admin_login.html"), 1500);
         btn.disabled = false;
         btn.textContent = originalText;
         return;
@@ -1254,7 +1254,7 @@
       if (sessionError || !session) {
         console.error("[Auth Guard] No active admin session found before delete:", sessionError);
         showToast("Unauthorized session. Please login again.", "error");
-        setTimeout(() => window.location.replace("login.html"), 1500);
+        setTimeout(() => window.location.replace("admin_login.html"), 1500);
         btn.disabled = false;
         btn.textContent = originalText;
         return;
@@ -1396,14 +1396,12 @@
       let filtered = [];
       if (currentInquiryCategory === 'property') {
         filtered = allLoadedInquiries.filter(item => 
-          item.property_id !== null && 
           !item.message.startsWith('[LOAN APPLICATION]') && 
           !item.message.startsWith('[INSURANCE APPLICATION]')
         );
       } else if (currentInquiryCategory === 'loan') {
         filtered = allLoadedInquiries.filter(item => 
-          item.message.startsWith('[LOAN APPLICATION]') || 
-          (item.property_id === null && !item.message.startsWith('[INSURANCE APPLICATION]'))
+          item.message.startsWith('[LOAN APPLICATION]')
         );
       } else if (currentInquiryCategory === 'insurance') {
         filtered = allLoadedInquiries.filter(item => 
