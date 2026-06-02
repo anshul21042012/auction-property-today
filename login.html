@@ -15,16 +15,11 @@
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
 
-    // Redirect instantly if session is already active
+    // Redirect instantly if admin session is already active
     const sessionKey = "sb-xqhrjhvbustdwmrmikya-auth-token";
     const isAdmin = localStorage.getItem('isAdmin') === 'true';
     if (localStorage.getItem(sessionKey) && isAdmin) {
       window.location.replace("admin.html");
-    } else {
-      const clientSession = JSON.parse(localStorage.getItem('clientSession') || '{}');
-      if (clientSession && clientSession.authenticated) {
-        window.location.replace("listings.html");
-      }
     }
   </script>
 

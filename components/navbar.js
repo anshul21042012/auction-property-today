@@ -43,6 +43,10 @@
       ? `<li><a href="#" class="nav-link" id="mobile-logout-btn" style="color:var(--status-cancelled);">Sign Out</a></li>`
       : `<li><a href="login.html" class="nav-link" style="color:var(--gold-primary);">Sign In</a></li>`;
 
+    const adminLinkHTML = isClientLoggedIn 
+      ? '' 
+      : `<li><a href="admin.html" class="nav-link ${isAdmin ? 'active' : ''}">Admin Dashboard</a></li>`;
+
     header.innerHTML = `
       <div class="container navbar-container">
         <a href="index.html" class="navbar-logo">
@@ -60,7 +64,7 @@
             <li><a href="${insuranceLink}" class="nav-link ${isInsurance ? 'active' : ''}">Insurance</a></li>
             <li><a href="${aboutLink}" class="nav-link">About Us</a></li>
             <li><a href="${contactLink}" class="nav-link">Contact</a></li>
-            <li><a href="admin.html" class="nav-link ${isAdmin ? 'active' : ''}">Admin Dashboard</a></li>
+            ${adminLinkHTML}
           </ul>
         </nav>
 
@@ -112,7 +116,7 @@
         <li><a href="${insuranceLink}" class="nav-link ${isInsurance ? 'active' : ''}">Insurance</a></li>
         <li><a href="${aboutLink}" class="nav-link">About Us</a></li>
         <li><a href="${contactLink}" class="nav-link">Contact</a></li>
-        <li><a href="admin.html" class="nav-link ${isAdmin ? 'active' : ''}">Admin Dashboard</a></li>
+        ${adminLinkHTML}
         ${loginMobileHTML}
       </ul>
     `;
