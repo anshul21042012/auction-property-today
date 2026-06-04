@@ -51,6 +51,32 @@
       
       if (!modal || !content) return;
 
+      // Check current auth session
+      const { data: { session }, error: sessionError } = await window.supabaseClient.auth.getSession();
+      const isAdmin = localStorage.getItem('isAdmin') === 'true';
+
+      if (!session && !isAdmin) {
+        window.location.replace("login.html");
+        return;
+      }
+
+      // If user is not Admin, check if they have purchased access
+      if (!isAdmin) {
+        const { data: accessData, error: accessError } = await window.supabaseClient
+          .from('property_access')
+          .select('*')
+          .eq('property_id', propertyId)
+          .eq('user_id', session.user.id);
+
+        if (accessError || !accessData || accessData.length === 0) {
+          // No access record. Close modal if open, then redirect to Unlock Property page.
+          modal.classList.remove('open');
+          document.body.style.overflow = '';
+          window.location.replace(`unlock.html?id=${propertyId}`);
+          return;
+        }
+      }
+
       // 1. Show modal in loading state
       modal.classList.add('open');
       document.body.style.overflow = 'hidden';
@@ -68,12 +94,11 @@
       `;
 
       // 3. Query Live Database
-      if (window.supabaseClient) {
-        const { data, error } = await window.supabaseClient
-          .from('properties')
-          .select('*, property_images(*)')
-          .eq('id', propertyId);
-        
+      const { data, error } = await window.supabaseClient
+        .from('properties')
+        .select('*, property_images(*)')
+        .eq('id', propertyId);
+
         if (error || !data || data.length === 0) {
           content.innerHTML = `
             <div style="grid-column: span 2; padding: 4rem; text-align: center;">

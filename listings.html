@@ -9,15 +9,14 @@
   <link rel="stylesheet" href="styles/index.css">
   <link rel="stylesheet" href="styles/components.css">
   <link rel="stylesheet" href="styles/pages.css">
-
   <!-- Immediate Theme Lock & Route Guard -->
   <script>
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
 
     const isAdmin = localStorage.getItem('isAdmin') === 'true';
-    const clientSession = JSON.parse(localStorage.getItem('clientSession') || '{}');
-    if (!isAdmin && (!clientSession || !clientSession.authenticated)) {
+    const hasAuthToken = localStorage.getItem('sb-xqhrjhvbustdwmrmikya-auth-token') !== null;
+    if (!isAdmin && !hasAuthToken) {
       window.location.replace("login.html");
     }
   </script>

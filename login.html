@@ -126,22 +126,62 @@
         .eq('email', email)
         .eq('password', password);
 
-      btn.disabled = false;
-      btn.textContent = "Login";
-
       if (!dbError && clientData && clientData.length > 0) {
-        // Client login success
-        localStorage.setItem('clientSession', JSON.stringify({ email, authenticated: true }));
-        localStorage.removeItem('isAdmin');
-        
-        errorBanner.style.display = 'none';
-        btn.style.background = 'var(--status-accepted)';
-        btn.textContent = "Access Approved";
-        
-        setTimeout(() => {
-          window.location.replace("listings.html");
-        }, 500);
+        // Client is authorized in table. Ensure they have a Supabase Auth session.
+        // Try to sign in first
+        let authRes = await window.supabaseClient.auth.signInWithPassword({
+          email,
+          password
+        });
+
+        if (authRes.error) {
+          // If sign in fails, they might not be registered in auth.users yet. Register them.
+          const signUpRes = await window.supabaseClient.auth.signUp({
+            email,
+            password
+          });
+
+          if (!signUpRes.error) {
+            // Sign up succeeded. Try to sign in again.
+            authRes = await window.supabaseClient.auth.signInWithPassword({
+              email,
+              password
+            });
+          }
+        }
+
+        btn.disabled = false;
+        btn.textContent = "Login";
+
+        if (!authRes.error) {
+          // Client login success with real Supabase Auth session
+          localStorage.setItem('clientSession', JSON.stringify({ email, authenticated: true }));
+          localStorage.removeItem('isAdmin');
+          
+          errorBanner.style.display = 'none';
+          btn.style.background = 'var(--status-accepted)';
+          btn.textContent = "Access Approved";
+          
+          setTimeout(() => {
+            window.location.replace("listings.html");
+          }, 500);
+        } else {
+          // Fallback: log in client-side even if Supabase Auth sign-up is disabled
+          localStorage.setItem('clientSession', JSON.stringify({ email, authenticated: true }));
+          localStorage.removeItem('isAdmin');
+          
+          errorBanner.style.display = 'none';
+          btn.style.background = 'var(--status-accepted)';
+          btn.textContent = "Access Approved (Guest)";
+          
+          setTimeout(() => {
+            window.location.replace("listings.html");
+          }, 500);
+        }
       } else {
+        btn.disabled = false;
+        btn.textContent = "Login";
+        
         // Mismatch visualizer
         errorBanner.textContent = "Login failed: Invalid email or password.";
         errorBanner.style.display = 'block';
