@@ -54,19 +54,23 @@
       // Check current auth session
       const { data: { session }, error: sessionError } = await window.supabaseClient.auth.getSession();
       const isAdmin = localStorage.getItem('isAdmin') === 'true';
+      const clientSession = JSON.parse(localStorage.getItem('clientSession') || '{}');
 
-      if (!session && !isAdmin) {
+      if (!session && !isAdmin && !clientSession.authenticated) {
         window.location.replace("login.html");
         return;
       }
 
       // If user is not Admin, check if they have purchased access
       if (!isAdmin) {
+        const userId = session ? session.user.id : "00000000-0000-0000-0000-000000000000";
+        const userEmail = session ? session.user.email : clientSession.email;
+
         const { data: accessData, error: accessError } = await window.supabaseClient
           .from('property_access')
           .select('*')
           .eq('property_id', propertyId)
-          .eq('user_id', session.user.id);
+          .or(`user_id.eq.${userId},user_email.eq.${userEmail}`);
 
         if (accessError || !accessData || accessData.length === 0) {
           // No access record. Close modal if open, then redirect to Unlock Property page.

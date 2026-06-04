@@ -16,7 +16,8 @@
 
     const isAdmin = localStorage.getItem('isAdmin') === 'true';
     const hasAuthToken = localStorage.getItem('sb-xqhrjhvbustdwmrmikya-auth-token') !== null;
-    if (!isAdmin && !hasAuthToken) {
+    const isClient = JSON.parse(localStorage.getItem('clientSession') || '{}').authenticated === true;
+    if (!isAdmin && !hasAuthToken && !isClient) {
       window.location.replace("login.html");
     }
   </script>
