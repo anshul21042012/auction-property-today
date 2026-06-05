@@ -239,11 +239,68 @@
           </div>
         </div>
 
-        <!-- Inquiry Category Filter Sub-Tabs -->
-        <div style="display:flex; gap:1rem; margin-bottom:2rem; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:1rem;">
-          <button class="btn-luxury" id="inq-filter-property" onclick="filterInquiriesByCategory('property')" style="padding:0.5rem 1.25rem; font-size:0.8rem; border-radius:4px;">Property Leads</button>
-          <button class="btn-luxury-outline" id="inq-filter-loan" onclick="filterInquiriesByCategory('loan')" style="padding:0.5rem 1.25rem; font-size:0.8rem; border-radius:4px;">Loan Applications</button>
-          <button class="btn-luxury-outline" id="inq-filter-insurance" onclick="filterInquiriesByCategory('insurance')" style="padding:0.5rem 1.25rem; font-size:0.8rem; border-radius:4px;">Insurance Requests</button>
+        <!-- Inquiries Mini-Dashboard (Summary Cards) -->
+        <div class="analytics-grid" style="margin-bottom: 2.5rem; display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.5rem; margin-top: 1rem;">
+          
+          <div class="metric-card active-inq-card" id="inq-card-all" onclick="filterInquiriesByStatus('all')" style="cursor: pointer; transition: all 0.3s ease; border: 1px solid var(--gold-primary); box-shadow: 0 0 15px rgba(212, 175, 55, 0.15); background: rgba(212, 175, 55, 0.03);">
+            <div class="metric-info">
+              <h4>Total Leads</h4>
+              <div class="metric-value" id="inq-count-all">0</div>
+            </div>
+            <div class="metric-icon">✉️</div>
+          </div>
+          
+          <div class="metric-card" id="inq-card-pending" onclick="filterInquiriesByStatus('pending')" style="cursor: pointer; transition: all 0.3s ease; border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.02);">
+            <div class="metric-info">
+              <h4>Pending</h4>
+              <div class="metric-value" id="inq-count-pending" style="color: var(--status-pending);">0</div>
+            </div>
+            <div class="metric-icon">⏳</div>
+          </div>
+          
+          <div class="metric-card" id="inq-card-accepted" onclick="filterInquiriesByStatus('accepted')" style="cursor: pointer; transition: all 0.3s ease; border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.02);">
+            <div class="metric-info">
+              <h4>Accepted</h4>
+              <div class="metric-value" id="inq-count-accepted" style="color: var(--status-accepted);">0</div>
+            </div>
+            <div class="metric-icon">🤝</div>
+          </div>
+          
+          <div class="metric-card" id="inq-card-completed" onclick="filterInquiriesByStatus('completed')" style="cursor: pointer; transition: all 0.3s ease; border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.02);">
+            <div class="metric-info">
+              <h4>Completed</h4>
+              <div class="metric-value" id="inq-count-completed" style="color: var(--status-completed);">0</div>
+            </div>
+            <div class="metric-icon">✅</div>
+          </div>
+
+          <div class="metric-card" id="inq-card-cancelled" onclick="filterInquiriesByStatus('cancelled')" style="cursor: pointer; transition: all 0.3s ease; border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.02);">
+            <div class="metric-info">
+              <h4>Cancelled</h4>
+              <div class="metric-value" id="inq-count-cancelled" style="color: var(--status-cancelled);">0</div>
+            </div>
+            <div class="metric-icon">❌</div>
+          </div>
+
+        </div>
+
+        <!-- Inquiry Category & Status Filters -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:1rem;">
+          <div style="display:flex; gap:1rem;">
+            <button class="btn-luxury" id="inq-filter-property" onclick="filterInquiriesByCategory('property')" style="padding:0.5rem 1.25rem; font-size:0.8rem; border-radius:4px;">Property Leads</button>
+            <button class="btn-luxury-outline" id="inq-filter-loan" onclick="filterInquiriesByCategory('loan')" style="padding:0.5rem 1.25rem; font-size:0.8rem; border-radius:4px;">Loan Applications</button>
+            <button class="btn-luxury-outline" id="inq-filter-insurance" onclick="filterInquiriesByCategory('insurance')" style="padding:0.5rem 1.25rem; font-size:0.8rem; border-radius:4px;">Insurance Requests</button>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.75rem;">
+            <span style="font-size:0.8rem; color:var(--text-secondary); text-transform:uppercase; font-weight:600;">Status Filter:</span>
+            <select id="inq-status-filter" class="filter-input" style="padding:0.4rem 1rem; width:auto; border-radius:4px;" onchange="filterInquiriesByStatus(this.value)">
+              <option value="all" selected>All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="accepted">Accepted</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
         </div>
 
         <!-- Inquiries Log Table -->
@@ -252,10 +309,10 @@
             <thead>
               <tr>
                 <th>Contact</th>
-                <th>Budget</th>
                 <th>Message</th>
                 <th>Date</th>
                 <th>Status</th>
+                <th style="text-align: right;">Actions</th>
               </tr>
             </thead>
             <tbody id="admin-inquiries-table-body">
@@ -416,7 +473,6 @@
                 <thead>
                   <tr>
                     <th>Customer</th>
-                    <th>Budget</th>
                     <th>Date</th>
                     <th>Status</th>
                   </tr>
@@ -1336,6 +1392,7 @@
     // INQUIRIES MANAGER
     // ----------------------------------------------------
     let currentInquiryCategory = 'property';
+    let currentInquiryStatus = 'all';
     let allLoadedInquiries = [];
 
     async function loadInquiriesTracker() {
@@ -1369,7 +1426,60 @@
       }
 
       allLoadedInquiries = data || [];
+
+      // Update Inquiries Mini-Dashboard Counts
+      const countAll = allLoadedInquiries.length;
+      const countPending = allLoadedInquiries.filter(i => i.status === 'pending').length;
+      const countAccepted = allLoadedInquiries.filter(i => i.status === 'accepted').length;
+      const countCompleted = allLoadedInquiries.filter(i => i.status === 'completed').length;
+      const countCancelled = allLoadedInquiries.filter(i => i.status === 'cancelled').length;
+
+      const cAll = document.getElementById('inq-count-all');
+      const cPending = document.getElementById('inq-count-pending');
+      const cAccepted = document.getElementById('inq-count-accepted');
+      const cCompleted = document.getElementById('inq-count-completed');
+      const cCancelled = document.getElementById('inq-count-cancelled');
+
+      if (cAll) cAll.textContent = countAll;
+      if (cPending) cPending.textContent = countPending;
+      if (cAccepted) cAccepted.textContent = countAccepted;
+      if (cCompleted) cCompleted.textContent = countCompleted;
+      if (cCancelled) cCancelled.textContent = countCancelled;
+
       renderFilteredInquiries();
+    }
+
+    function filterInquiriesByStatus(status) {
+      currentInquiryStatus = status;
+
+      // Update Select input value
+      const selectFilter = document.getElementById('inq-status-filter');
+      if (selectFilter) {
+        selectFilter.value = status;
+      }
+
+      // Update Card highlights
+      updateActiveInquiryCard(status);
+
+      renderFilteredInquiries();
+    }
+
+    function updateActiveInquiryCard(status) {
+      const statuses = ['all', 'pending', 'accepted', 'completed', 'cancelled'];
+      statuses.forEach(s => {
+        const card = document.getElementById(`inq-card-${s}`);
+        if (card) {
+          if (s === status) {
+            card.style.borderColor = 'var(--gold-primary)';
+            card.style.boxShadow = '0 0 15px rgba(212, 175, 55, 0.15)';
+            card.style.background = 'rgba(212, 175, 55, 0.03)';
+          } else {
+            card.style.borderColor = 'var(--border-color)';
+            card.style.boxShadow = 'none';
+            card.style.background = 'rgba(255, 255, 255, 0.02)';
+          }
+        }
+      });
     }
 
     function filterInquiriesByCategory(category) {
@@ -1397,27 +1507,34 @@
       const tableBody = document.getElementById('admin-inquiries-table-body');
       if (!tableBody) return;
 
-      let filtered = [];
+      let filtered = allLoadedInquiries;
+
+      // 1. Filter by category
       if (currentInquiryCategory === 'property') {
-        filtered = allLoadedInquiries.filter(item => 
+        filtered = filtered.filter(item => 
           !item.message.startsWith('[LOAN APPLICATION]') && 
           !item.message.startsWith('[INSURANCE APPLICATION]')
         );
       } else if (currentInquiryCategory === 'loan') {
-        filtered = allLoadedInquiries.filter(item => 
+        filtered = filtered.filter(item => 
           item.message.startsWith('[LOAN APPLICATION]')
         );
       } else if (currentInquiryCategory === 'insurance') {
-        filtered = allLoadedInquiries.filter(item => 
+        filtered = filtered.filter(item => 
           item.message.startsWith('[INSURANCE APPLICATION]')
         );
+      }
+
+      // 2. Filter by status
+      if (currentInquiryStatus !== 'all') {
+        filtered = filtered.filter(item => item.status === currentInquiryStatus);
       }
 
       if (filtered.length === 0) {
         tableBody.innerHTML = `
           <tr>
             <td colspan="5" style="text-align:center; padding:3rem 0; color:var(--text-muted);">
-              No ${currentInquiryCategory} inquiries found.
+              No matching inquiries found.
             </td>
           </tr>
         `;
@@ -1441,7 +1558,6 @@
             <div style="font-weight:600; color:var(--text-primary); font-family:var(--font-sans);">${escapeHTML(item.name)}</div>
             <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">${escapeHTML(item.phone)} <br> ${escapeHTML(item.email)}</div>
           </td>
-          <td style="font-weight:600; color:var(--text-secondary);">${escapeHTML(item.budget)}</td>
           <td style="font-size:0.85rem; max-width:250px; line-height:1.4;">${escapeHTML(displayMessage)}</td>
           <td>${new Date(date).toLocaleDateString('en-IN', {day:'numeric', month:'short'})}</td>
           <td>
@@ -1452,25 +1568,34 @@
               <option value="cancelled" class="status-pill cancelled" ${item.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
             </select>
           </td>
+          <td style="text-align: right;">
+            <button class="btn-table-action delete" onclick="deleteInquiryLog(${item.id})" title="Delete Inquiry" style="background:transparent; border:none; cursor:pointer; font-size:1.1rem; padding:0.25rem;">🗑️</button>
+          </td>
         `;
         tableBody.appendChild(row);
       });
     }
 
-    // Update status logs dynamically in Supabase
-    async function updateInquiryStatusState(inquiryId, newStatus) {
+    }
+
+    // Delete customer inquiry from database
+    async function deleteInquiryLog(inquiryId) {
       if (!window.supabaseClient) return;
+
+      const confirmDelete = confirm("Are you sure you want to delete this customer inquiry data? This action cannot be undone.");
+      if (!confirmDelete) return;
 
       const { error } = await window.supabaseClient
         .from('inquiries')
-        .update({ status: newStatus })
+        .delete()
         .eq('id', inquiryId);
-      
+
       if (error) {
-        showToast(`Failed to update status: ${error.message}`, 'error');
+        showToast(`Failed to delete inquiry: ${error.message}`, 'error');
       } else {
-        showToast("Inquiry status updated.");
+        showToast("Inquiry deleted successfully.");
         loadInquiriesTracker();
+        loadDashboardOverview();
       }
     }
 
@@ -1528,7 +1653,7 @@
         if (inquiries.length === 0) {
           recentInqBody.innerHTML = `
             <tr>
-              <td colspan="4" style="text-align:center; padding:2rem 0; color:var(--text-muted);">
+              <td colspan="3" style="text-align:center; padding:2rem 0; color:var(--text-muted);">
                 No inquiries found.
               </td>
             </tr>
@@ -1559,7 +1684,6 @@
                 </div>
                 <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">${escapeHTML(item.phone)}</div>
               </td>
-              <td style="font-weight:600; color:var(--text-secondary); font-size:0.85rem;">${escapeHTML(item.budget)}</td>
               <td style="font-size:0.8rem; color:var(--text-muted);">${dateFormatted}</td>
               <td>
                 <span class="status-pill ${statusClass}" style="font-size:0.75rem; padding:0.2rem 0.5rem; display:inline-block;">${statusText}</span>
@@ -1795,6 +1919,8 @@
     window.loadAuthorizedClients = loadAuthorizedClients;
     window.createAuthorizedClient = createAuthorizedClient;
     window.deleteAuthorizedClient = deleteAuthorizedClient;
+    window.filterInquiriesByStatus = filterInquiriesByStatus;
+    window.deleteInquiryLog = deleteInquiryLog;
 
     // Initial triggers on load
     window.addEventListener('load', () => {
