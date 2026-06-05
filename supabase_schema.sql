@@ -183,13 +183,19 @@ DROP POLICY IF EXISTS "Users can view their own property access records" ON publ
 DROP POLICY IF EXISTS "Users can insert their own property access records" ON public.property_access;
 DROP POLICY IF EXISTS "Admin can view all property access records" ON public.property_access;
 
--- RLS Policy: Users can only view purchase records corresponding to their user_id
+-- RLS Policy: Users can view purchase records corresponding to their user_id, or anonymous guests
 CREATE POLICY "Users can view their own property access records"
-    ON public.property_access FOR SELECT USING (auth.uid() = user_id);
+    ON public.property_access FOR SELECT USING (
+      auth.uid() = user_id 
+      OR auth.uid() IS NULL
+    );
 
--- RLS Policy: Users can insert purchase records corresponding to their user_id
+-- RLS Policy: Users can insert purchase records corresponding to their user_id, or anonymous guests
 CREATE POLICY "Users can insert their own property access records"
-    ON public.property_access FOR INSERT WITH CHECK (auth.uid() = user_id);
+    ON public.property_access FOR INSERT WITH CHECK (
+      auth.uid() = user_id 
+      OR auth.uid() IS NULL
+    );
 
 -- RLS Policy: Admin can view all property access records
 CREATE POLICY "Admin can view all property access records"
