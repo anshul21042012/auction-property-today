@@ -184,23 +184,7 @@
         return;
       }
 
-      // If user is not Admin, check if they have purchased access
-      if (!isAdmin) {
-        const userId = session ? session.user.id : "00000000-0000-0000-0000-000000000000";
-        const userEmail = session ? session.user.email : clientSession.email;
 
-        const { data: accessData, error: accessError } = await window.supabaseClient
-          .from('property_access')
-          .select('*')
-          .eq('property_id', id)
-          .or(`user_id.eq.${userId},user_email.eq.${userEmail}`);
-
-        if (accessError || !accessData || accessData.length === 0) {
-          // No access record found. Redirect to Unlock Property page.
-          window.location.replace(`unlock.html?id=${id}`);
-          return;
-        }
-      }
 
       // Query real database properties table with images join
       const { data, error } = await window.supabaseClient

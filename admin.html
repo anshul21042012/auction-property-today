@@ -185,11 +185,6 @@
             <span>🔑</span> Client Access
           </button>
         </li>
-        <li>
-          <button class="sidebar-menu-btn" id="tab-btn-payments" onclick="switchDashboardTab('payments')">
-            <span>🔓</span> Access & Unlocks
-          </button>
-        </li>
       </ul>
 
       <div style="margin-top:auto;">
@@ -326,60 +321,7 @@
         </div>
       </div>
 
-      <!-- 5. ACCESS & UNLOCKS TAB -->
-      <div class="admin-tab-pane" id="pane-payments">
-        <div class="admin-page-header">
-          <div>
-            <h2>Access Log &amp; Unlocks</h2>
-            <p>Monitor dossier unlock events and check which clients have accessed which properties.</p>
-          </div>
-        </div>
 
-        <!-- Metrics Grid -->
-        <div class="analytics-grid" style="margin-bottom: 2.5rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 1.5rem;">
-          <div class="metric-card">
-            <div class="metric-info">
-              <h4>Total Unlock Logs</h4>
-              <div class="metric-value" id="payments-total-revenue">0</div>
-            </div>
-            <div class="metric-icon">🔓</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-info">
-              <h4>Properties Unlocked</h4>
-              <div class="metric-value" id="payments-total-unlocked">0</div>
-            </div>
-            <div class="metric-icon">🏠</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-info">
-              <h4>Total Access Permits</h4>
-              <div class="metric-value" id="payments-total-transactions">0</div>
-            </div>
-            <div class="metric-icon">🔑</div>
-          </div>
-        </div>
-
-        <!-- Access Log Table -->
-        <div class="glassmorphism" style="padding: 2.5rem; border-radius: 8px; margin-top: 1.5rem;">
-          <h3 style="font-family: var(--font-sans); font-size: 1.1rem; text-transform: uppercase; color: var(--gold-primary); letter-spacing: 0.05em; margin-bottom: 1.5rem; font-weight: 600;">Access &amp; Unlock Logs</h3>
-          <div class="luxury-table-wrapper" style="margin: 0;">
-            <table class="luxury-table">
-              <thead>
-                <tr>
-                  <th>Client Email</th>
-                  <th>Target Property</th>
-                  <th>Unlock Method</th>
-                  <th>Unlock Date</th>
-                </tr>
-              </thead>
-              <tbody id="admin-payments-table-body">
-                <!-- Dynamically loaded -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
 
       <!-- 3. DASHBOARD OVERVIEW TAB -->
       <div class="admin-tab-pane active" id="pane-dashboard">
@@ -606,11 +548,7 @@
             </div>
           </div>
 
-          <!-- Access Password input -->
-          <div class="form-group">
-            <label for="form-password">Access Password</label>
-            <input type="text" id="form-password" class="form-input" placeholder="e.g. secret123 (Leave blank for no password)" style="border-radius:4px;" />
-          </div>
+
 
           <!-- Featured Auction promotion option -->
           <div class="form-group">
@@ -764,8 +702,6 @@
         loadInquiriesTracker();
       } else if (tabName === 'clients') {
         loadAuthorizedClients();
-      } else if (tabName === 'payments') {
-        loadPaymentsAccess();
       }
     }
 
@@ -1106,7 +1042,6 @@
       const bathrooms = parseInt(document.getElementById('form-bathrooms').value);
       const auctionDate = new Date(document.getElementById('form-auction-date').value).toISOString();
       const featured = document.getElementById('form-featured').checked;
-      const password = document.getElementById('form-password').value.trim();
 
       // 6. Ensure frontend form state / formData uses standardized keys only
       const formData = {
@@ -1138,8 +1073,7 @@
         bedrooms: Number(formData.bedrooms),
         bathrooms: Number(formData.bathrooms),
         auction_date: formData.auction_date,
-        is_featured: formData.is_featured,
-        access_password: password || null
+        is_featured: formData.is_featured
       };
 
       // 2. Add detailed console logs before Supabase insert
@@ -1286,7 +1220,6 @@
       }
 
       document.getElementById('form-featured').checked = !!item.is_featured;
-      document.getElementById('form-password').value = item.access_password || '';
     }
 
     // CRUD: Delete Property controls
@@ -1846,89 +1779,7 @@
       }
     }
 
-    // Load Payments and Property Access Log
-    async function loadPaymentsAccess() {
-      const tableBody = document.getElementById('admin-payments-table-body');
-      const totalRevenueEl = document.getElementById('payments-total-revenue');
-      const totalUnlockedEl = document.getElementById('payments-total-unlocked');
-      const totalTransactionsEl = document.getElementById('payments-total-transactions');
-      
-      if (!tableBody || !window.supabaseClient) return;
 
-      tableBody.innerHTML = `
-        <tr>
-          <td colspan="4" style="text-align:center; padding:3rem 0;">
-            <div class="skeleton" style="width:30px; height:30px; border-radius:50%; display:inline-block;"></div>
-            <p style="color:var(--text-muted); font-size:0.85rem; margin-top:0.5rem;">Loading unlock logs...</p>
-          </td>
-        </tr>
-      `;
-
-      const { data, error } = await window.supabaseClient
-        .from('property_access')
-        .select('*, properties(title)')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        showToast(`Failed to load unlock records: ${error.message}`, 'error');
-        tableBody.innerHTML = `
-          <tr>
-            <td colspan="4" style="text-align:center; padding:3rem 0; color:var(--status-cancelled);">
-              Error loading logs.
-            </td>
-          </tr>
-        `;
-        return;
-      }
-
-      const records = data || [];
-      
-      // Calculate Stats
-      const uniqueUnlockedProperties = new Set();
-      
-      records.forEach(rec => {
-        if (rec.property_id) {
-          uniqueUnlockedProperties.add(rec.property_id);
-        }
-      });
-
-      if (totalRevenueEl) totalRevenueEl.textContent = records.length;
-      if (totalUnlockedEl) totalUnlockedEl.textContent = uniqueUnlockedProperties.size;
-      if (totalTransactionsEl) totalTransactionsEl.textContent = records.length;
-
-      if (records.length === 0) {
-        tableBody.innerHTML = `
-          <tr>
-            <td colspan="4" style="text-align:center; padding:3rem 0; color:var(--text-muted);">
-              No unlock logs found.
-            </td>
-          </tr>
-        `;
-        return;
-      }
-
-      tableBody.innerHTML = '';
-      records.forEach(rec => {
-        const dateFormatted = new Date(rec.created_at || new Date().toISOString()).toLocaleDateString('en-IN', {
-          day: 'numeric',
-          month: 'short',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        });
-
-        const propertyTitle = rec.properties ? (rec.properties.title || 'Unknown Property') : 'Unknown Property';
-
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td style="font-weight:600; color:var(--text-primary); font-size:0.85rem;">${escapeHTML(rec.user_email)}</td>
-          <td style="font-weight:600; color:var(--text-secondary); font-size:0.85rem;">${escapeHTML(propertyTitle)}</td>
-          <td style="font-family:monospace; color:var(--gold-primary); font-size:0.8rem;">Password Unlock</td>
-          <td style="font-size:0.8rem; color:var(--text-muted);">${dateFormatted}</td>
-        `;
-        tableBody.appendChild(row);
-      });
-    }
 
     // Explicitly bind handlers to the window object to guarantee global accessibility for inline onclick bindings
     window.editPropertyRoster = editPropertyRoster;
@@ -1944,7 +1795,6 @@
     window.loadAuthorizedClients = loadAuthorizedClients;
     window.createAuthorizedClient = createAuthorizedClient;
     window.deleteAuthorizedClient = deleteAuthorizedClient;
-    window.loadPaymentsAccess = loadPaymentsAccess;
 
     // Initial triggers on load
     window.addEventListener('load', () => {

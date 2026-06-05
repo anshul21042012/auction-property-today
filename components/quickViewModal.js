@@ -61,25 +61,7 @@
         return;
       }
 
-      // If user is not Admin, check if they have purchased access
-      if (!isAdmin) {
-        const userId = session ? session.user.id : "00000000-0000-0000-0000-000000000000";
-        const userEmail = session ? session.user.email : clientSession.email;
 
-        const { data: accessData, error: accessError } = await window.supabaseClient
-          .from('property_access')
-          .select('*')
-          .eq('property_id', propertyId)
-          .or(`user_id.eq.${userId},user_email.eq.${userEmail}`);
-
-        if (accessError || !accessData || accessData.length === 0) {
-          // No access record. Close modal if open, then redirect to Unlock Property page.
-          modal.classList.remove('open');
-          document.body.style.overflow = '';
-          window.location.replace(`unlock.html?id=${propertyId}`);
-          return;
-        }
-      }
 
       // 1. Show modal in loading state
       modal.classList.add('open');
