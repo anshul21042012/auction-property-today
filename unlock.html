@@ -26,7 +26,7 @@
   <!-- Supabase & Razorpay Ingress -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="services/supabaseClient.js"></script>
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
 </head>
 <body>
 
@@ -58,22 +58,14 @@
           Unlock standard bidding dossiers, cleared legal documentations, physical inspection records, and verified recovery valuations.
         </p>
 
-        <!-- Price Callout Panel -->
-        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: 6px; padding: 1.25rem; margin-bottom: 2rem;">
-          <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em; display: block; margin-bottom: 0.25rem;">Unlock Property Access</span>
-          <div style="font-family: var(--font-serif); font-size: 2.2rem; color: var(--gold-primary); font-weight: 700;">₹100 <span style="font-size: 1rem; color: var(--text-muted); font-family: var(--font-sans); font-weight: 500;">(One-Time Fee)</span></div>
-        </div>
-
-        <!-- Action Button -->
-        <button id="unlock-pay-btn" class="btn-luxury" style="width: 100%; border-radius: 4px; padding: 0.85rem 1.5rem; font-weight: 600; letter-spacing: 0.05em;" onclick="initiatePayment()">
-          PAY ₹100 TO UNLOCK
-        </button>
-
-        <!-- Simulated Checkout Option for easy verification -->
-        <div style="margin-top: 1.5rem; text-align: center;">
-          <a href="#" style="font-size: 0.75rem; color: var(--text-muted); text-decoration: underline;" onclick="simulatePayment(event)">
-            Or simulate payment verification (Local Testing)
-          </a>
+        <!-- Password Input Form -->
+        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: 6px; padding: 2rem 1.5rem; margin-bottom: 2rem;">
+          <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em; display: block; margin-bottom: 1rem;">Enter Access Password</span>
+          <input type="password" id="unlock-password" class="form-input" placeholder="••••••••••••" style="text-align: center; font-size: 1.25rem; letter-spacing: 0.1em; border-radius: 4px; margin-bottom: 1.25rem;" />
+          <button id="unlock-submit-btn" class="btn-luxury" style="width: 100%; border-radius: 4px; padding: 0.85rem 1.5rem; font-weight: 600; letter-spacing: 0.05em;" onclick="verifyPasswordAccess()">
+            UNLOCK PROPERTY
+          </button>
+          <div id="unlock-error-msg" style="display: none; color: var(--status-cancelled); font-size: 0.85rem; margin-top: 1rem; font-weight: 500;"></div>
         </div>
       </div>
 
@@ -161,84 +153,55 @@
       active.style.display = 'block';
     }
 
-    // Razorpay checkout modal
-    function initiatePayment() {
-      const email = authSession ? authSession.user.email : 'liaison@auctionproperty.today';
-      const name = email.split('@')[0];
+    // Verify Access Password via Supabase RPC
+    async function verifyPasswordAccess() {
+      const passwordInput = document.getElementById('unlock-password').value.trim();
+      const submitBtn = document.getElementById('unlock-submit-btn');
+      const errorMsg = document.getElementById('unlock-error-msg');
 
-      const options = {
-        "key": "rzp_test_generic", // Test Mode Key
-        "amount": 10000, // ₹100.00 (in paise)
-        "currency": "INR",
-        "name": "AuctionPropertyToday",
-        "description": `Unlock access to: ${activeProperty.title || activeProperty.property_name}`,
-        "image": "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=120&q=80",
-        "handler": async function (response) {
-          await savePaymentRecord(response.razorpay_payment_id);
-        },
-        "prefill": {
-          "name": name,
-          "email": email,
-          "contact": ""
-        },
-        "theme": {
-          "color": "#D4AF37"
-        }
-      };
-
-      try {
-        const rzp = new Razorpay(options);
-        rzp.open();
-      } catch (err) {
-        console.error("Razorpay Modal failed to open:", err);
-        // Fallback simulation option in case script fails to load
-        if (confirm("Razorpay integration script is not initialized. Would you like to simulate payment verification?")) {
-          executeSimulatedPayment();
-        }
-      }
-    }
-
-    // Record verified purchase inside Supabase
-    async function savePaymentRecord(paymentId) {
-      const payBtn = document.getElementById('unlock-pay-btn');
-      payBtn.disabled = true;
-      payBtn.textContent = "VERIFYING TRANSACTION...";
-
-      // Standard user ID fallback for testing
-      const clientSession = JSON.parse(localStorage.getItem('clientSession') || '{}');
-      const userId = authSession ? authSession.user.id : "00000000-0000-0000-0000-000000000000";
-      const userEmail = authSession ? authSession.user.email : (clientSession.email || "test@example.com");
-
-      const { data, error } = await window.supabaseClient
-        .from('property_access')
-        .insert([{
-          user_id: userId,
-          property_id: activeProperty.id,
-          razorpay_payment_id: paymentId,
-          amount: 100,
-          user_email: userEmail,
-          created_at: new Date().toISOString()
-        }]);
-
-      if (error) {
-        alert(`Error registering purchase: ${error.message}`);
-        payBtn.disabled = false;
-        payBtn.textContent = "PAY ₹100 TO UNLOCK";
+      if (!passwordInput) {
+        errorMsg.textContent = "Please enter the password.";
+        errorMsg.style.display = 'block';
         return;
       }
 
-      // Spawn VIP premium success banner
-      spawnSuccessPopup();
-    }
+      submitBtn.disabled = true;
+      submitBtn.textContent = "VERIFYING PASSWORD...";
+      errorMsg.style.display = 'none';
 
-    function simulatePayment(event) {
-      event.preventDefault();
-      executeSimulatedPayment();
-    }
+      const clientSession = JSON.parse(localStorage.getItem('clientSession') || '{}');
+      const userEmail = authSession ? authSession.user.email : (clientSession.email || "client@example.com");
 
-    async function executeSimulatedPayment() {
-      const dummyPaymentId = `pay_sim_${Math.random().toString(36).substring(2, 12).toUpperCase()}`;
-      await savePaymentRecord(dummyPaymentId);
+      try {
+        const { data: isUnlocked, error } = await window.supabaseClient.rpc('verify_and_unlock_property', {
+          p_property_id: activeProperty.id,
+          p_password: passwordInput,
+          p_user_email: userEmail
+        });
+
+        submitBtn.disabled = false;
+        submitBtn.textContent = "UNLOCK PROPERTY";
+
+        if (error) {
+          console.error("RPC Error:", error);
+          errorMsg.textContent = `Error: ${error.message}`;
+          errorMsg.style.display = 'block';
+          return;
+        }
+
+        if (isUnlocked === true) {
+          spawnSuccessPopup();
+        } else {
+          errorMsg.textContent = "Invalid access password. Please try again.";
+          errorMsg.style.display = 'block';
+        }
+      } catch (err) {
+        console.error("Exception checking password:", err);
+        submitBtn.disabled = false;
+        submitBtn.textContent = "UNLOCK PROPERTY";
+        errorMsg.textContent = "An unexpected error occurred. Please try again.";
+        errorMsg.style.display = 'block';
+      }
     }
 
     function spawnSuccessPopup() {
@@ -246,7 +209,7 @@
       card.innerHTML = `
         <div style="padding: 2rem 0; text-align: center;">
           <div style="font-size: 4rem; margin-bottom: 1.5rem; animation: checkPop 0.5s ease;">🏆</div>
-          <h3 style="font-family: var(--font-serif); font-size: 1.8rem; color: var(--gold-primary); margin-bottom: 1rem;">Payment Verified</h3>
+          <h3 style="font-family: var(--font-serif); font-size: 1.8rem; color: var(--gold-primary); margin-bottom: 1rem;">Property Unlocked</h3>
           <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6; margin-bottom: 2.5rem;">
             Access granted successfully. You now have permanent viewing and bidding privileges for this property.
           </p>

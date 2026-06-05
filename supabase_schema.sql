@@ -202,6 +202,40 @@ CREATE POLICY "Admin can view all property access records"
     ON public.property_access FOR SELECT USING (
       (select auth.jwt() ->> 'email') IN ('admin@auctionproperty.today', 'liaison@auctionproperty.today', 'escrow@auctionproperty.today')
     );
+-- 8. PROPERTY ACCESS GATING PASSWORD SYSTEM [NEW]
+-- Add access password column to properties table
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS access_password text;
 
-
-
+-- Create secure verification & unlock log function
+CREATE OR REPLACE FUNCTION public.verify_and_unlock_property(
+  p_property_id uuid,
+  p_password text,
+  p_user_email text
+)
+RETURNS boolean SECURITY DEFINER AS $$
+DECLARE
+  v_correct_password text;
+  v_user_id uuid;
+BEGIN
+  -- 1. Fetch password for target property
+  SELECT access_password INTO v_correct_password FROM public.properties WHERE id = p_property_id;
+  
+  -- 2. Verify match
+  IF v_correct_password = p_password THEN
+    -- Get user id if logged in
+    v_user_id := auth.uid();
+    IF v_user_id IS NULL THEN
+      v_user_id := '00000000-0000-0000-0000-000000000000'::uuid;
+    END IF;
+    
+    -- Log unlock event in property_access (storing 'password_unlock' as payment ID and 0 amount)
+    INSERT INTO public.property_access (user_id, property_id, razorpay_payment_id, amount, user_email)
+    VALUES (v_user_id, p_property_id, 'password_unlock', 0, p_user_email)
+    ON CONFLICT DO NOTHING;
+    
+    RETURN true;
+  ELSE
+    RETURN false;
+  END IF;
+END;
+$$ LANGUAGE plpgsql;

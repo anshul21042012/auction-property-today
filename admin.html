@@ -187,7 +187,7 @@
         </li>
         <li>
           <button class="sidebar-menu-btn" id="tab-btn-payments" onclick="switchDashboardTab('payments')">
-            <span>💸</span> Payments & Access
+            <span>🔓</span> Access & Unlocks
           </button>
         </li>
       </ul>
@@ -326,12 +326,12 @@
         </div>
       </div>
 
-      <!-- 5. PAYMENTS & ACCESS TAB -->
+      <!-- 5. ACCESS & UNLOCKS TAB -->
       <div class="admin-tab-pane" id="pane-payments">
         <div class="admin-page-header">
           <div>
-            <h2>Payments &amp; Access Control</h2>
-            <p>Track purchased property accesses, view total revenue, and monitor unlock logs.</p>
+            <h2>Access Log &amp; Unlocks</h2>
+            <p>Monitor dossier unlock events and check which clients have accessed which properties.</p>
           </div>
         </div>
 
@@ -339,38 +339,37 @@
         <div class="analytics-grid" style="margin-bottom: 2.5rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 1.5rem;">
           <div class="metric-card">
             <div class="metric-info">
-              <h4>Total Revenue</h4>
-              <div class="metric-value" id="payments-total-revenue">₹0</div>
+              <h4>Total Unlock Logs</h4>
+              <div class="metric-value" id="payments-total-revenue">0</div>
             </div>
-            <div class="metric-icon">💰</div>
+            <div class="metric-icon">🔓</div>
           </div>
           <div class="metric-card">
             <div class="metric-info">
               <h4>Properties Unlocked</h4>
               <div class="metric-value" id="payments-total-unlocked">0</div>
             </div>
-            <div class="metric-icon">🔓</div>
+            <div class="metric-icon">🏠</div>
           </div>
           <div class="metric-card">
             <div class="metric-info">
-              <h4>Total Transactions</h4>
+              <h4>Total Access Permits</h4>
               <div class="metric-value" id="payments-total-transactions">0</div>
             </div>
-            <div class="metric-icon">💸</div>
+            <div class="metric-icon">🔑</div>
           </div>
         </div>
 
-        <!-- Payments Log Table -->
+        <!-- Access Log Table -->
         <div class="glassmorphism" style="padding: 2.5rem; border-radius: 8px; margin-top: 1.5rem;">
-          <h3 style="font-family: var(--font-sans); font-size: 1.1rem; text-transform: uppercase; color: var(--gold-primary); letter-spacing: 0.05em; margin-bottom: 1.5rem; font-weight: 600;">Transaction &amp; Access Log</h3>
+          <h3 style="font-family: var(--font-sans); font-size: 1.1rem; text-transform: uppercase; color: var(--gold-primary); letter-spacing: 0.05em; margin-bottom: 1.5rem; font-weight: 600;">Access &amp; Unlock Logs</h3>
           <div class="luxury-table-wrapper" style="margin: 0;">
             <table class="luxury-table">
               <thead>
                 <tr>
-                  <th>Purchaser Email</th>
+                  <th>Client Email</th>
                   <th>Target Property</th>
-                  <th>Payment ID</th>
-                  <th>Amount</th>
+                  <th>Unlock Method</th>
                   <th>Unlock Date</th>
                 </tr>
               </thead>
@@ -605,6 +604,12 @@
             <div id="existing-media-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:1rem; margin-top:0.75rem;">
               <!-- Dynamically populated -->
             </div>
+          </div>
+
+          <!-- Access Password input -->
+          <div class="form-group">
+            <label for="form-password">Access Password</label>
+            <input type="text" id="form-password" class="form-input" placeholder="e.g. secret123 (Leave blank for no password)" style="border-radius:4px;" />
           </div>
 
           <!-- Featured Auction promotion option -->
@@ -1101,6 +1106,7 @@
       const bathrooms = parseInt(document.getElementById('form-bathrooms').value);
       const auctionDate = new Date(document.getElementById('form-auction-date').value).toISOString();
       const featured = document.getElementById('form-featured').checked;
+      const password = document.getElementById('form-password').value.trim();
 
       // 6. Ensure frontend form state / formData uses standardized keys only
       const formData = {
@@ -1132,7 +1138,8 @@
         bedrooms: Number(formData.bedrooms),
         bathrooms: Number(formData.bathrooms),
         auction_date: formData.auction_date,
-        is_featured: formData.is_featured
+        is_featured: formData.is_featured,
+        access_password: password || null
       };
 
       // 2. Add detailed console logs before Supabase insert
@@ -1279,6 +1286,7 @@
       }
 
       document.getElementById('form-featured').checked = !!item.is_featured;
+      document.getElementById('form-password').value = item.access_password || '';
     }
 
     // CRUD: Delete Property controls
@@ -1849,9 +1857,9 @@
 
       tableBody.innerHTML = `
         <tr>
-          <td colspan="5" style="text-align:center; padding:3rem 0;">
+          <td colspan="4" style="text-align:center; padding:3rem 0;">
             <div class="skeleton" style="width:30px; height:30px; border-radius:50%; display:inline-block;"></div>
-            <p style="color:var(--text-muted); font-size:0.85rem; margin-top:0.5rem;">Loading payments &amp; access logs...</p>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin-top:0.5rem;">Loading unlock logs...</p>
           </td>
         </tr>
       `;
@@ -1862,11 +1870,11 @@
         .order('created_at', { ascending: false });
 
       if (error) {
-        showToast(`Failed to load payment records: ${error.message}`, 'error');
+        showToast(`Failed to load unlock records: ${error.message}`, 'error');
         tableBody.innerHTML = `
           <tr>
-            <td colspan="5" style="text-align:center; padding:3rem 0; color:var(--status-cancelled);">
-              Error loading payments.
+            <td colspan="4" style="text-align:center; padding:3rem 0; color:var(--status-cancelled);">
+              Error loading logs.
             </td>
           </tr>
         `;
@@ -1876,25 +1884,23 @@
       const records = data || [];
       
       // Calculate Stats
-      let totalRevenue = 0;
       const uniqueUnlockedProperties = new Set();
       
       records.forEach(rec => {
-        totalRevenue += Number(rec.amount || 0);
         if (rec.property_id) {
           uniqueUnlockedProperties.add(rec.property_id);
         }
       });
 
-      if (totalRevenueEl) totalRevenueEl.textContent = `₹${totalRevenue.toLocaleString('en-IN')}`;
+      if (totalRevenueEl) totalRevenueEl.textContent = records.length;
       if (totalUnlockedEl) totalUnlockedEl.textContent = uniqueUnlockedProperties.size;
       if (totalTransactionsEl) totalTransactionsEl.textContent = records.length;
 
       if (records.length === 0) {
         tableBody.innerHTML = `
           <tr>
-            <td colspan="5" style="text-align:center; padding:3rem 0; color:var(--text-muted);">
-              No payment records found.
+            <td colspan="4" style="text-align:center; padding:3rem 0; color:var(--text-muted);">
+              No unlock logs found.
             </td>
           </tr>
         `;
@@ -1912,14 +1918,12 @@
         });
 
         const propertyTitle = rec.properties ? (rec.properties.title || 'Unknown Property') : 'Unknown Property';
-        const amountFormatted = `₹${Number(rec.amount || 0).toLocaleString('en-IN')}`;
 
         const row = document.createElement('tr');
         row.innerHTML = `
           <td style="font-weight:600; color:var(--text-primary); font-size:0.85rem;">${escapeHTML(rec.user_email)}</td>
           <td style="font-weight:600; color:var(--text-secondary); font-size:0.85rem;">${escapeHTML(propertyTitle)}</td>
-          <td style="font-family:monospace; color:var(--text-muted); font-size:0.8rem;">${escapeHTML(rec.razorpay_payment_id)}</td>
-          <td style="font-weight:600; color:var(--gold-primary); font-family:var(--font-serif);">${amountFormatted}</td>
+          <td style="font-family:monospace; color:var(--gold-primary); font-size:0.8rem;">Password Unlock</td>
           <td style="font-size:0.8rem; color:var(--text-muted);">${dateFormatted}</td>
         `;
         tableBody.appendChild(row);
