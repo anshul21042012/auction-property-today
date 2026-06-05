@@ -1561,7 +1561,7 @@
           <td style="font-size:0.85rem; max-width:250px; line-height:1.4;">${escapeHTML(displayMessage)}</td>
           <td>${new Date(date).toLocaleDateString('en-IN', {day:'numeric', month:'short'})}</td>
           <td>
-            <select class="inquiry-status-select status-pill ${item.status}" onchange="updateInquiryStatusState(${item.id}, this.value)">
+            <select class="inquiry-status-select status-pill ${item.status}" onchange="updateInquiryStatusState('${item.id}', this.value)">
               <option value="pending" class="status-pill pending" ${item.status === 'pending' ? 'selected' : ''}>Pending</option>
               <option value="accepted" class="status-pill accepted" ${item.status === 'accepted' ? 'selected' : ''}>Accepted</option>
               <option value="completed" class="status-pill completed" ${item.status === 'completed' ? 'selected' : ''}>Completed</option>
@@ -1569,7 +1569,7 @@
             </select>
           </td>
           <td style="text-align: right;">
-            <button class="btn-table-action delete" onclick="deleteInquiryLog(${item.id})" title="Delete Inquiry" style="background:transparent; border:none; cursor:pointer; font-size:1.1rem; padding:0.25rem;">🗑️</button>
+            <button class="btn-table-action delete" onclick="deleteInquiryLog('${item.id}')" title="Delete Inquiry" style="background:transparent; border:none; cursor:pointer; font-size:1.1rem; padding:0.25rem;">🗑️</button>
           </td>
         `;
         tableBody.appendChild(row);
