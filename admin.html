@@ -1576,6 +1576,24 @@
       });
     }
 
+    // Update status logs dynamically in Supabase
+    async function updateInquiryStatusState(inquiryId, newStatus) {
+      if (!window.supabaseClient) return;
+
+      const { error } = await window.supabaseClient
+        .from('inquiries')
+        .update({ status: newStatus })
+        .eq('id', inquiryId);
+      
+      if (error) {
+        showToast(`Failed to update status: ${error.message}`, 'error');
+      } else {
+        showToast("Inquiry status updated.");
+        loadInquiriesTracker();
+        loadDashboardOverview();
+      }
+    }
+
     // Delete customer inquiry from database
     async function deleteInquiryLog(inquiryId) {
       if (!window.supabaseClient) return;
@@ -1605,8 +1623,9 @@
 
       const client = window.supabaseClient;
       const now = new Date();
-      const sevenDaysLater = new Date();
-      sevenDaysLater.setDate(now.getDate() + 7);
+      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const sevenDaysLater = new Date(startOfToday.getTime() + 7 * 24 * 60 * 60 * 1000);
+      sevenDaysLater.setHours(23, 59, 59, 999);
 
       // 1. Fetch properties, inquiries, and authorized clients in parallel
       const [propsRes, inqsRes, clientsRes] = await Promise.all([
@@ -1628,7 +1647,7 @@
       const upcomingAuctions = properties.filter(p => {
         if (!p.auction_date) return false;
         const aDate = new Date(p.auction_date);
-        return aDate >= now && aDate <= sevenDaysLater;
+        return aDate >= startOfToday && aDate <= sevenDaysLater;
       });
       const upcomingCount = upcomingAuctions.length;
 
