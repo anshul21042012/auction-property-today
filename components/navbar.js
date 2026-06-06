@@ -39,11 +39,7 @@
       ? `<a href="#" class="nav-btn-login" id="nav-logout-btn" style="border-color:var(--status-cancelled); color:var(--status-cancelled);">Logout</a>`
       : `<a href="login.html" class="nav-btn-login">Login</a>`;
 
-    const searchBtnHTML = isHome 
-      ? '' 
-      : `<button class="nav-btn" id="nav-search-trigger" title="Search Properties">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-         </button>`;
+
 
     const loginMobileHTML = (isClientLoggedIn || isAdminLoggedIn)
       ? `<li><a href="#" class="nav-link" id="mobile-logout-btn" style="color:var(--status-cancelled);">Sign Out</a></li>`
@@ -75,8 +71,6 @@
         </nav>
 
         <div class="nav-controls">
-          <!-- Search button -->
-          ${searchBtnHTML}
           
           <!-- Theme toggle button -->
           <button class="nav-btn" id="nav-theme-toggle" title="Toggle Theme">
@@ -132,35 +126,6 @@
     overlay.id = 'mobile-drawer-overlay';
     document.body.appendChild(overlay);
 
-    // Inject Search Modal
-    injectSearchModal();
-  }
-
-  // Inject search popup modal HTML
-  function injectSearchModal() {
-    const searchModal = document.createElement('div');
-    searchModal.className = 'quick-view-modal';
-    searchModal.id = 'navbar-search-modal';
-    searchModal.innerHTML = `
-      <div class="modal-backdrop" id="search-modal-backdrop"></div>
-      <div class="modal-card glassmorphic" style="max-width: 600px; padding: 2.5rem; border-radius: 8px;">
-        <button class="modal-close-btn" id="search-modal-close">×</button>
-        <h3 class="luxury-heading" style="font-size: 1.5rem; margin-bottom: 1rem; color: var(--gold-primary);">Search Properties</h3>
-        <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:1.5rem;">Find verified real estate auctions across India.</p>
-        
-        <div style="display:flex; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 2rem;">
-          <input type="text" id="navbar-search-input" placeholder="Search by city, type, or name..." style="background:transparent; border:none; width:100%; color:var(--text-primary); font-size:1.1rem; padding:0.5rem 0;" />
-          <button style="color:var(--gold-primary);" id="navbar-search-btn">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          </button>
-        </div>
-        
-        <div id="search-results-panel" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem;">
-          <p style="color:var(--text-muted); font-size:0.9rem; text-align:center;">Type above to begin searching...</p>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(searchModal);
   }
 
   // Setup navbar interactions, scroll handlers, theme logic
@@ -234,109 +199,7 @@
       });
     }
 
-    // 4. Live Properties Search Modal
-    const searchTrigger = document.getElementById('nav-search-trigger');
-    const searchModal = document.getElementById('navbar-search-modal');
-    const searchClose = document.getElementById('search-modal-close');
-    const searchBackdrop = document.getElementById('search-modal-backdrop');
-    const searchInput = document.getElementById('navbar-search-input');
-    const searchResults = document.getElementById('search-results-panel');
 
-    function openSearch() {
-      searchModal.classList.add('open');
-      document.body.style.overflow = 'hidden';
-      setTimeout(() => searchInput.focus(), 200);
-    }
-
-    function closeSearch() {
-      searchModal.classList.remove('open');
-      document.body.style.overflow = '';
-      searchInput.value = '';
-      searchResults.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem; text-align:center;">Type above to begin searching...</p>`;
-    }
-
-    if (searchTrigger) searchTrigger.addEventListener('click', openSearch);
-    if (searchClose) searchClose.addEventListener('click', closeSearch);
-    if (searchBackdrop) searchBackdrop.addEventListener('click', closeSearch);
-
-    // Handle typing inside Search Input
-    if (searchInput) {
-      searchInput.addEventListener('input', async function(e) {
-        const query = e.target.value.trim();
-        if (query.length < 2) {
-          searchResults.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem; text-align:center;">Type at least 2 characters to search...</p>`;
-          return;
-        }
-
-        searchResults.innerHTML = `
-          <div style="display:flex; justify-content:center; padding: 1.5rem 0;">
-            <div class="skeleton" style="width:30px; height:30px; border-radius:50%;"></div>
-          </div>
-        `;
-
-        if (window.supabaseClient) {
-          const { data, error } = await window.supabaseClient
-            .from('properties')
-            .select('*, property_images(*)')
-            .or(`title.ilike.%${query}%,description.ilike.%${query}%,city.ilike.%${query}%`);
-          
-          if (error || !data || data.length === 0) {
-            searchResults.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem; text-align:center;">No matching properties found.</p>`;
-            return;
-          }
-
-          searchResults.innerHTML = '';
-          data.forEach(item => {
-            const images = item.property_images && item.property_images.length > 0
-              ? item.property_images.map(img => img.image_url)
-              : ["https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80"];
-
-            const rawPrice = item.price || item.reservation_price || 0;
-            const priceFormatted = `₹${(rawPrice / 10000000).toFixed(1)} Cr`;
-
-            const pName = item.title || item.property_name || 'Untitled';
-            const pClass = item.property_type || item.property_classification || item.type || 'Villa';
-
-            const resultItem = document.createElement('a');
-            resultItem.href = `details.html?id=${item.id}`;
-            resultItem.className = 'search-result-item';
-            resultItem.style.cssText = `
-              display: flex;
-              align-items: center;
-              gap: 1rem;
-              padding: 0.75rem;
-              border-radius: 4px;
-              border: 1px solid var(--border-color);
-              background: var(--bg-surface-elevated);
-              transition: var(--transition-fast);
-            `;
-            
-            resultItem.innerHTML = `
-              <img src="${images[0]}" alt="${pName}" style="width:50px; height:50px; object-fit:cover; border-radius:3px;" />
-              <div style="flex-grow:1;">
-                <h4 style="font-family:var(--font-serif); font-size:1rem; color:var(--text-primary); margin-bottom:2px;">${pName}</h4>
-                <p style="font-size:0.75rem; color:var(--text-secondary);">${item.city} • ${pClass}</p>
-              </div>
-              <div style="text-align:right; font-weight:600; color:var(--gold-primary); font-size:0.95rem; font-family:var(--font-serif);">
-                ${priceFormatted}
-              </div>
-            `;
-
-            // Hover styles in JS for standalone ease
-            resultItem.addEventListener('mouseenter', () => {
-              resultItem.style.borderColor = 'var(--gold-primary)';
-              resultItem.style.background = 'rgba(212,175,55,0.03)';
-            });
-            resultItem.addEventListener('mouseleave', () => {
-              resultItem.style.borderColor = 'var(--border-color)';
-              resultItem.style.background = 'var(--bg-surface-elevated)';
-            });
-
-            searchResults.appendChild(resultItem);
-          });
-        }
-      });
-    }
     // Dynamic Logout Listeners
     const logoutBtn = document.getElementById('nav-logout-btn');
     const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
