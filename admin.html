@@ -240,7 +240,7 @@
         </div>
 
         <!-- Inquiries Mini-Dashboard (Summary Cards) -->
-        <div class="analytics-grid" style="margin-bottom: 2.5rem; display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.5rem; margin-top: 1rem;">
+        <div class="analytics-grid cols-5" style="margin-bottom: 2.5rem; margin-top: 1rem;">
           
           <div class="metric-card active-inq-card" id="inq-card-all" onclick="filterInquiriesByStatus('all')" style="cursor: pointer; transition: all 0.3s ease; border: 1px solid var(--gold-primary); box-shadow: 0 0 15px rgba(212, 175, 55, 0.15); background: rgba(212, 175, 55, 0.03);">
             <div class="metric-info">
@@ -331,7 +331,7 @@
           </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2.5rem; margin-top: 2rem;">
+        <div class="admin-two-cols" style="margin-top: 2rem;">
           <!-- Left Column: Add Client Form -->
           <div class="glassmorphism" style="padding: 2.5rem; border-radius: 8px;">
             <h3 style="font-family: var(--font-sans); font-size: 1.1rem; text-transform: uppercase; color: var(--gold-primary); letter-spacing: 0.05em; margin-bottom: 1.5rem; font-weight: 600;">Create Client Account</h3>
@@ -390,7 +390,7 @@
         </div>
 
         <!-- TOP SECTION — QUICK OVERVIEW CARDS -->
-        <div class="analytics-grid" style="margin-bottom: 2.5rem; display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.5rem;">
+        <div class="analytics-grid cols-5" style="margin-bottom: 2.5rem;">
           
           <div class="metric-card">
             <div class="metric-info">
@@ -437,7 +437,7 @@
         <!-- SECOND SECTION — IMPORTANT ACTIONS -->
         <div style="margin-bottom: 2.5rem;">
           <h3 style="font-family: var(--font-sans); font-size: 1rem; text-transform: uppercase; color: var(--gold-primary); letter-spacing: 0.05em; margin-bottom: 1.25rem; font-weight: 600;">Quick Actions</h3>
-          <div class="quick-actions-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem;">
+          <div class="quick-actions-grid">
             
             <button class="action-card-btn" onclick="openPropertyFormModal('add')">
               <span class="action-icon">➕</span>
@@ -463,7 +463,7 @@
         </div>
 
         <!-- THIRD & FOURTH SECTIONS — RECENT INQUIRIES & UPCOMING AUCTIONS -->
-        <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 2rem; margin-bottom: 2.5rem;">
+        <div class="admin-split-layout" style="margin-bottom: 2.5rem;">
           
           <!-- Recent Inquiries Panel -->
           <div class="glassmorphism" style="padding: 2rem; border-radius: 8px;">
@@ -497,7 +497,7 @@
         <!-- FIFTH SECTION — RECENTLY ADDED PROPERTIES -->
         <div class="glassmorphism" style="padding: 2rem; border-radius: 8px; margin-bottom: 1rem;">
           <h3 style="font-family: var(--font-sans); font-size: 1rem; text-transform: uppercase; color: var(--gold-primary); letter-spacing: 0.05em; margin-bottom: 1.25rem; font-weight: 600;">Recently Added Properties</h3>
-          <div id="dash-recent-properties-list" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.5rem;">
+          <div id="dash-recent-properties-list" class="recent-properties-grid">
             <!-- Dynamically loaded -->
           </div>
         </div>

@@ -1539,3 +1539,33 @@
     transform: translateY(0);
   }
 }
+
+/* Mobile Responsiveness General Overrides */
+@media (max-width: 768px) {
+  .listings-hero, .details-page-wrapper {
+    padding: 6rem 0 3rem 0;
+  }
+  
+  .page-hero {
+    padding: 7rem 0 3.5rem 0;
+  }
+  
+  .details-grid {
+    gap: 2rem;
+  }
+  
+  .form-input, .btn-luxury, .btn-luxury-outline, .btn-card-quick, .btn-card-details, .filter-input, .form-submit-btn .btn-luxury {
+    min-height: 46px;
+    padding-top: 0.65rem;
+    padding-bottom: 0.65rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 400px) {
+  .amenities-grid {
+    grid-template-columns: 1fr;
+  }
+}

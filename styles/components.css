@@ -143,6 +143,10 @@
 
 .hamburger-btn {
   display: none;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
 }
 
 /* MOBILE NAV DRAWER */
@@ -151,6 +155,7 @@
   top: 0;
   right: -100%;
   width: 300px;
+  max-width: 85vw;
   height: 100vh;
   z-index: 1100;
   background: var(--bg-surface);
@@ -174,8 +179,8 @@
 }
 
 .drawer-close {
-  width: 35px;
-  height: 35px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -194,6 +199,11 @@
 .mobile-nav-links .nav-link {
   font-size: 1.25rem;
   font-family: var(--font-serif);
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0.5rem 0;
+  width: 100%;
 }
 
 .mobile-drawer-overlay {
@@ -371,7 +381,16 @@
   }
 }
 
+@media (max-width: 768px) {
+  .luxury-footer {
+    padding: 4rem 0 2.5rem 0;
+  }
+}
+
 @media (max-width: 600px) {
+  .luxury-footer {
+    padding: 3rem 0 2rem 0;
+  }
   .footer-grid {
     grid-template-columns: 1fr;
     gap: 2.5rem;
