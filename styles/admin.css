@@ -335,6 +335,9 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
+  .luxury-table {
+    min-width: 850px;
+  }
 }
 
 /* STATE/STATUS PILLS */

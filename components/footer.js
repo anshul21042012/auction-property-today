@@ -5,6 +5,11 @@
 
 (function() {
   document.addEventListener('DOMContentLoaded', function() {
+    const path = window.location.pathname;
+    const page = path.split("/").pop() || "index.html";
+    if (page === "login.html" || page === "admin_login.html") {
+      return;
+    }
     injectFooter();
     setupFooterInteractions();
   });

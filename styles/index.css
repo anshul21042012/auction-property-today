@@ -75,6 +75,8 @@
 html {
   font-size: 16px;
   scroll-behavior: smooth;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 @media (max-width: 768px) {
@@ -96,6 +98,8 @@ body {
   line-height: 1.6;
   transition: background-color 0.5s ease, color 0.5s ease;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 a {
@@ -303,4 +307,40 @@ h1, h2, h3, h4, h5, h6, .luxury-heading {
   border-radius: 50%;
   margin: 0 0.5rem;
   vertical-align: middle;
+}
+
+/* Responsive Grid & Utility Classes */
+.cols-3 {
+  grid-template-columns: repeat(3, 1fr) !important;
+}
+
+@media (max-width: 900px) {
+  .cols-3 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .cols-3 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 600px) {
+  .form-grid-2 {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .service-select-card {
+    padding: 0.8rem 0.4rem !important;
+  }
 }

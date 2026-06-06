@@ -839,3 +839,10 @@
     height: 350px;
   }
 }
+
+@media (max-width: 380px) {
+  .card-actions {
+    grid-template-columns: 1fr !important;
+    gap: 0.5rem;
+  }
+}
