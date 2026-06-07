@@ -118,8 +118,8 @@
 }
 
 .search-field select option {
-  background: var(--bg-surface);
-  color: var(--text-primary);
+  background: #ffffff !important;
+  color: #000000 !important;
 }
 
 .search-field select:focus, .search-field input:focus {
