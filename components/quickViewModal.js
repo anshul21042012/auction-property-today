@@ -102,7 +102,9 @@
           : ["https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80"];
 
         const rawPrice = item.price || item.reservation_price || 0;
-        const priceFormatted = `₹${(rawPrice / 10000000).toFixed(1)} Cr`;
+        const priceFormatted = rawPrice >= 10000000
+          ? `₹${(rawPrice / 10000000).toFixed(1)} Cr`
+          : `₹${(rawPrice / 100000).toFixed(1).replace('.0', '')} Lakh`;
         const auctionDate = item.auction_date || new Date().toISOString();
 
         const pName = item.title || item.property_name || 'Untitled';

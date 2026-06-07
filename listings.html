@@ -229,7 +229,9 @@
 
         const auctionDate = item.auction_date || new Date().toISOString();
         const rawPrice = item.price || item.reservation_price || 0;
-        const priceFormatted = `₹${(rawPrice / 10000000).toFixed(1)} Cr`;
+        const priceFormatted = rawPrice >= 10000000
+          ? `₹${(rawPrice / 10000000).toFixed(1)} Cr`
+          : `₹${(rawPrice / 100000).toFixed(1).replace('.0', '')} Lakh`;
 
         const pName = item.title || item.property_name || 'Untitled';
         const pClass = item.property_type || item.property_classification || item.type || 'Villa';
