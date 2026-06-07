@@ -204,7 +204,7 @@ CREATE POLICY "Users can insert their own property access records"
 -- RLS Policy: Admin can view all property access records
 CREATE POLICY "Admin can view all property access records"
     ON public.property_access FOR SELECT USING (
-      (select auth.jwt() ->> 'email') IN ('admin@auctionproperty.today', 'liaison@auctionproperty.today', 'escrow@auctionproperty.today', 'iammanishgarg@gmail.com')
+      (select auth.jwt() ->> 'email') IN ('admin@auctionproperty.today', 'liaison@auctionproperty.today', 'escrow@auctionproperty.today', 'iammanishgarg@gmail.com', 'Office@mytelebusiness.com', 'manishgarg@mytelebusiness', 'manishgarg@mytelebusiness.com')
     );
 -- 8. PROPERTY ACCESS GATING PASSWORD SYSTEM [NEW]
 -- Add access password column to properties table
