@@ -44,6 +44,20 @@
 
   <!-- Interactive Carousel & Form Logics -->
   <script>
+    // Secure HTML Escaping Utility for XSS Prevention
+    function escapeHTML(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>'"]/g, 
+        tag => ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          "'": '&#39;',
+          '"': '&quot;'
+        }[tag] || tag)
+      );
+    }
+
     let activeSlideIndex = 0;
     let slidesCount = 0;
 
@@ -204,6 +218,20 @@
       }
 
       const item = data[0];
+      
+      // Query property documents independently to prevent page failure if table doesn't exist yet
+      item.property_documents = [];
+      try {
+        const { data: docsData, error: docsError } = await window.supabaseClient
+          .from('property_documents')
+          .select('*')
+          .eq('property_id', id);
+        if (!docsError && docsData) {
+          item.property_documents = docsData;
+        }
+      } catch (err) {
+        console.warn("Property documents table may not exist yet:", err);
+      }
       const images = item.property_images && item.property_images.length > 0
         ? item.property_images.map(img => img.image_url)
         : ["https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80"];
@@ -377,6 +405,39 @@
                 </table>
               </div>
             </div>
+
+            <!-- Property Documents list -->
+            ${item.property_documents && item.property_documents.length > 0 ? `
+            <div class="details-section" style="border-top:1px solid var(--border-color); border-bottom:none;">
+              <h3>Legal & Property Documents</h3>
+              <p style="color:var(--text-secondary); font-size:0.9rem; margin-bottom:1.5rem;">Download verified legal paper audits, NOC certificates, and bank recovery orders.</p>
+              <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                ${item.property_documents.map(doc => `
+                  <a href="${doc.document_url}" target="_blank" style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 1rem 1.25rem;
+                    border-radius: 6px;
+                    border: 1px solid var(--border-color);
+                    background: rgba(255, 255, 255, 0.02);
+                    color: var(--text-primary);
+                    text-decoration: none;
+                    transition: all 0.3s ease;
+                  " onmouseover="this.style.borderColor='var(--gold-primary)'; this.style.background='rgba(212, 175, 55, 0.02)';" onmouseout="this.style.borderColor='var(--border-color)'; this.style.background='rgba(255, 255, 255, 0.02)';">
+                    <div style="display:flex; align-items:center; gap:0.75rem;">
+                      <span style="font-size:1.5rem;">📄</span>
+                      <div style="text-align:left;">
+                        <div style="font-weight:600; font-size:0.95rem;">${escapeHTML(doc.document_name)}</div>
+                        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Verified Document</div>
+                      </div>
+                    </div>
+                    <span style="color:var(--gold-primary); font-weight:600; font-size:0.9rem;">Download ➔</span>
+                  </a>
+                `).join('')}
+              </div>
+            </div>
+            ` : ''}
           </div>
           
           <!-- Right Column (Sticky side panel) -->

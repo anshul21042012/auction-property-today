@@ -579,10 +579,29 @@
             </div>
           </div>
 
+          <!-- Document Upload Dropzone -->
+          <div class="form-group" style="margin-top: 1.5rem;">
+            <label>Upload Legal Documents (PDF, DOC, TXT, etc.)</label>
+            <div class="file-dropzone" onclick="document.getElementById('form-document-input').click()">
+              <input type="file" id="form-document-input" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none;" onchange="handleMultipleDocumentsSelect(event)" />
+              <div class="file-dropzone-icon">📄</div>
+              <div class="file-dropzone-text" id="form-document-dropzone-text-label">Click to select documents</div>
+              <div class="file-dropzone-subtext">Document files will be uploaded to Supabase Storage.</div>
+            </div>
+          </div>
+
           <!-- Existing Media Grid (Visible in Edit mode only) -->
           <div class="form-group" id="existing-media-container" style="display:none; margin-top:1.5rem;">
             <label>Existing Media (Click 🗑️ to delete)</label>
             <div id="existing-media-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:1rem; margin-top:0.75rem;">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Existing Documents Grid (Visible in Edit mode only) -->
+          <div class="form-group" id="existing-documents-container" style="display:none; margin-top:1.5rem;">
+            <label>Existing Documents (Click 🗑️ to delete)</label>
+            <div id="existing-documents-grid" style="display:flex; flex-direction:column; gap:0.5rem; margin-top:0.75rem;">
               <!-- Dynamically populated -->
             </div>
           </div>
@@ -917,6 +936,157 @@
         };
         await client.from('property_images').insert([imageRecord]);
         index++;
+    }
+
+    // ----------------------------------------------------
+    // DOCUMENT SELECTION & UPLOADER ENGINE
+    // ----------------------------------------------------
+    let selectedUploadDocs = [];
+
+    function handleMultipleDocumentsSelect(event) {
+      selectedUploadDocs = Array.from(event.target.files);
+      const textLabel = document.getElementById('form-document-dropzone-text-label');
+      if (textLabel) {
+        textLabel.textContent = `${selectedUploadDocs.length} file(s) selected. Ready for upload.`;
+        textLabel.style.color = "var(--gold-hover)";
+      }
+    }
+
+    function renderExistingDocuments(documents, propertyId) {
+      const container = document.getElementById('existing-documents-container');
+      const grid = document.getElementById('existing-documents-grid');
+      if (!container || !grid) return;
+
+      if (!documents || documents.length === 0) {
+        container.style.display = 'none';
+        grid.innerHTML = '';
+        return;
+      }
+
+      container.style.display = 'block';
+      grid.innerHTML = '';
+
+      documents.forEach(doc => {
+        const item = document.createElement('div');
+        item.style.cssText = `
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0.6rem 0.8rem;
+          border-radius: 4px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(18, 18, 20, 0.4);
+          font-size: 0.85rem;
+        `;
+        
+        item.innerHTML = `
+          <div style="display:flex; align-items:center; gap:0.5rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:80%;">
+            <span>📄</span>
+            <a href="${doc.document_url}" target="_blank" style="color:var(--text-primary); text-decoration:none;" title="${escapeHTML(doc.document_name)}">${escapeHTML(doc.document_name)}</a>
+          </div>
+          <button type="button" class="delete-media-btn" style="
+            background: rgba(0,0,0,0.7); 
+            border: 1px solid rgba(255,255,255,0.15); 
+            border-radius: 4px; 
+            color: #ff4d4d; 
+            width: 24px; 
+            height: 24px; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 11px;
+            transition: all 0.2s;
+          " onclick="deleteExistingDocument('${doc.id}', '${doc.document_url}', '${propertyId}')" title="Delete document">🗑️</button>
+        `;
+        grid.appendChild(item);
+      });
+    }
+
+    async function deleteExistingDocument(docId, docUrl, propertyId) {
+      if (!window.supabaseClient) return;
+      if (!confirm("Are you sure you want to delete this document file?")) return;
+
+      console.log("[Supabase Debug] Deleting document record:", docId);
+      const { error } = await window.supabaseClient
+        .from('property_documents')
+        .delete()
+        .eq('id', docId);
+
+      if (error) {
+        console.error("Failed to delete document record:", error);
+        showToast(`Failed to delete document: ${error.message}`, 'error');
+        return;
+      }
+
+      // Also try to delete from Storage if it's a Supabase storage URL
+      try {
+        if (docUrl.includes('property-images')) {
+          const parts = docUrl.split('/property-images/');
+          if (parts.length > 1) {
+            const filePath = decodeURIComponent(parts[1].split('?')[0]);
+            console.log("[Supabase Debug] Deleting storage document file:", filePath);
+            await window.supabaseClient.storage
+              .from('property-images')
+              .remove([filePath]);
+          }
+        }
+      } catch (storageErr) {
+        console.error("Failed to delete storage file:", storageErr);
+      }
+
+      showToast("Document file deleted successfully.");
+      
+      // Refresh the edit form's existing documents display
+      const { data: refreshed, error: refreshError } = await window.supabaseClient
+        .from('properties')
+        .select('*, property_documents(*)')
+        .eq('id', propertyId);
+        
+      if (!refreshError && refreshed && refreshed.length > 0) {
+        renderExistingDocuments(refreshed[0].property_documents || [], propertyId);
+      }
+    }
+
+    async function uploadMultipleDocuments(propertyId, files, progressCallback) {
+      if (!window.supabaseClient || files.length === 0) return;
+
+      const client = window.supabaseClient;
+      let index = 1;
+      
+      for (const file of files) {
+        if (progressCallback) {
+          progressCallback(`Uploading document ${index} of ${files.length}...`);
+        }
+        
+        const fileExt = file.name.split('.').pop();
+        const fileName = `property_${propertyId}/docs/${Date.now()}_${Math.floor(Math.random() * 1000)}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        // 1. Upload file to 'property-images' bucket
+        const { data, error } = await client.storage
+          .from('property-images')
+          .upload(filePath, file, { cacheControl: '3600', upsert: true });
+
+        if (error) {
+          console.error("Document upload failed for file:", file.name, error);
+          showToast(`Upload failed for ${file.name}: ${error.message}`, 'error');
+          continue;
+        }
+
+        // 2. Get Public URL
+        const { data: { publicUrl } } = client.storage
+          .from('property-images')
+          .getPublicUrl(filePath);
+
+        // 3. Register URL in 'property_documents' table
+        const docRecord = {
+          property_id: propertyId,
+          document_url: publicUrl,
+          document_name: file.name
+        };
+        await client.from('property_documents').insert([docRecord]);
+        index++;
       }
     }
 
@@ -1015,19 +1185,31 @@
       const title = document.getElementById('property-modal-title');
       const form = document.getElementById('admin-property-form');
       const textLabel = document.getElementById('form-dropzone-text-label');
+      const docTextLabel = document.getElementById('form-document-dropzone-text-label');
       
       form.reset();
       document.getElementById('form-property-id').value = '';
       selectedUploadFiles = [];
+      selectedUploadDocs = [];
+      
       if (textLabel) {
         textLabel.textContent = "Click to select photos & videos for upload";
         textLabel.style.color = "var(--text-secondary)";
+      }
+      if (docTextLabel) {
+        docTextLabel.textContent = "Click to select documents";
+        docTextLabel.style.color = "var(--text-secondary)";
       }
 
       const existingMediaContainer = document.getElementById('existing-media-container');
       const existingMediaGrid = document.getElementById('existing-media-grid');
       if (existingMediaContainer) existingMediaContainer.style.display = 'none';
       if (existingMediaGrid) existingMediaGrid.innerHTML = '';
+      
+      const existingDocsContainer = document.getElementById('existing-documents-container');
+      const existingDocsGrid = document.getElementById('existing-documents-grid');
+      if (existingDocsContainer) existingDocsContainer.style.display = 'none';
+      if (existingDocsGrid) existingDocsGrid.innerHTML = '';
       
       if (mode === 'add') {
         title.textContent = "Add New Property";
@@ -1170,6 +1352,14 @@
               console.error("[Supabase Debug] Seeding default image failed:", imgError);
             }
           }
+
+          // If documents are selected, upload them
+          if (selectedUploadDocs.length > 0) {
+            await uploadMultipleDocuments(newPropId, selectedUploadDocs, (progText) => {
+              btn.textContent = progText;
+            });
+          }
+
           showToast("Property added successfully.");
         }
       } else {
@@ -1205,6 +1395,13 @@
             btn.textContent = progText;
           });
         }
+
+        // If additional documents are selected, upload them
+        if (selectedUploadDocs.length > 0) {
+          await uploadMultipleDocuments(propertyId, selectedUploadDocs, (progText) => {
+            btn.textContent = progText;
+          });
+        }
         showToast("Property updated successfully.");
       }
 
@@ -1234,10 +1431,26 @@
       }
       
       const item = data[0];
+      
+      // Query property documents independently to prevent failure if table doesn't exist yet
+      item.property_documents = [];
+      try {
+        const { data: docsData, error: docsError } = await window.supabaseClient
+          .from('property_documents')
+          .select('*')
+          .eq('property_id', propertyId);
+        if (!docsError && docsData) {
+          item.property_documents = docsData;
+        }
+      } catch (err) {
+        console.warn("Property documents table may not exist yet:", err);
+      }
+      
       console.log("[Supabase Debug] Fetched Property Data:", item);
       openPropertyFormModal('edit');
 
       renderExistingMedia(item.property_images || [], propertyId);
+      renderExistingDocuments(item.property_documents || [], propertyId);
 
       document.getElementById('form-property-id').value = propertyId;
       document.getElementById('form-title').value = item.title || '';
@@ -1949,6 +2162,8 @@
     window.deleteAuthorizedClient = deleteAuthorizedClient;
     window.filterInquiriesByStatus = filterInquiriesByStatus;
     window.deleteInquiryLog = deleteInquiryLog;
+    window.handleMultipleDocumentsSelect = handleMultipleDocumentsSelect;
+    window.deleteExistingDocument = deleteExistingDocument;
 
     // Initial triggers on load
     window.addEventListener('load', () => {
