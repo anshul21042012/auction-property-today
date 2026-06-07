@@ -50,12 +50,16 @@
             <h4 class="footer-section-title">Our Offices</h4>
             <div class="footer-office">
               <div class="office-card">
-                <h4>Mumbai BKC</h4>
-                <p>Suite 1204, Capital Building, Bandra Kurla Complex, Mumbai 400051</p>
+                <h4>Rohtak Office</h4>
+                <p>SCO 8 MDU Complex, Power House Chowk, Rohtak 124001, Haryana</p>
               </div>
               <div class="office-card">
-                <h4>Lutyens' Delhi</h4>
-                <p>32, Amaltas Avenue, Lutyens' Bungalow Zone, New Delhi 110001</p>
+                <h4>Patran Office</h4>
+                <p>SCO 5, Behind Yes Bank, Jakhal Road, Patran, Dist Patiala 147105</p>
+              </div>
+              <div class="office-card">
+                <h4>Patiala Office</h4>
+                <p>SCO 127, Second Floor, Above Bharat Sanitary Store, Near Bank of Baroda, Choti Baradari, Patiala 147001</p>
               </div>
             </div>
           </div>
