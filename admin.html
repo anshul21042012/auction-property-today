@@ -564,7 +564,7 @@
             
             <div class="form-group">
               <label for="form-auction-date">Auction Date</label>
-              <input type="datetime-local" id="form-auction-date" class="form-input" required />
+              <input type="date" id="form-auction-date" class="form-input" required />
             </div>
           </div>
 
@@ -1246,12 +1246,12 @@
       document.getElementById('form-state').value = item.state || '';
       document.getElementById('form-area').value = item.area_sqft || 0;
       
-      // format date to fit datetime-local inputs
+      // format date to fit date inputs (YYYY-MM-DD)
       if (item.auction_date) {
         const localDate = new Date(item.auction_date);
         const offset = localDate.getTimezoneOffset();
         const adjustedDate = new Date(localDate.getTime() - (offset*60*1000));
-        document.getElementById('form-auction-date').value = adjustedDate.toISOString().substring(0, 16);
+        document.getElementById('form-auction-date').value = adjustedDate.toISOString().substring(0, 10);
       } else {
         document.getElementById('form-auction-date').value = '';
       }
