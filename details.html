@@ -16,9 +16,16 @@
 
     const isAdmin = localStorage.getItem('isAdmin') === 'true';
     const hasAuthToken = localStorage.getItem('sb-xqhrjhvbustdwmrmikya-auth-token') !== null;
-    const isClient = JSON.parse(localStorage.getItem('clientSession') || '{}').authenticated === true;
+    const clientSession = JSON.parse(localStorage.getItem('clientSession') || '{}');
+    const isClient = clientSession.authenticated === true;
     if (!isAdmin && !hasAuthToken && !isClient) {
       window.location.replace("login.html");
+    } else if (isClient && !isAdmin && !hasAuthToken && clientSession.property_id) {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      if (id && id !== clientSession.property_id) {
+        window.location.replace(`details.html?id=${clientSession.property_id}`);
+      }
     }
   </script>
 
@@ -198,6 +205,11 @@
         return;
       }
 
+      if (clientSession.authenticated && !isAdmin && clientSession.property_id && clientSession.property_id !== id) {
+        window.location.replace(`details.html?id=${clientSession.property_id}`);
+        return;
+      }
+
 
 
       // Query real database properties table with images join
@@ -253,19 +265,6 @@
       const pBaths = item.bathrooms !== undefined && item.bathrooms !== null ? item.bathrooms : (item.bathroom_configuration || 0);
       const pLoc = item.location || `${item.city}, ${item.state}`;
 
-      const bedroomsHtml = pBHK > 0 ? `
-            <div class="details-spec-box" style="border-left:1px solid var(--border-color); padding-left:2.5rem;">
-              <span class="spec-lbl">Bedrooms</span>
-              <span class="spec-val">${pBHK} BHK</span>
-            </div>
-      ` : '';
-      const bathroomsHtml = pBaths > 0 ? `
-            <div class="details-spec-box" style="border-left:1px solid var(--border-color); padding-left:2.5rem;">
-              <span class="spec-lbl">Bathrooms</span>
-              <span class="spec-val">${pBaths} Baths</span>
-            </div>
-      ` : '';
-
       // Render the entire layout
       container.innerHTML = `
         <!-- Top header row -->
@@ -291,8 +290,6 @@
               <span class="spec-lbl">Area</span>
               <span class="spec-val">${pArea.toLocaleString('en-IN')} Sq Yard</span>
             </div>
-            ${bedroomsHtml}
-            ${bathroomsHtml}
           </div>
         </div>
 
@@ -300,7 +297,9 @@
         <div class="luxury-carousel">
           <div class="carousel-slides-container" id="details-slides-container">
             ${images.map(img => {
-              const isVidS = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'm4v'].includes(img.split('?')[0].split('.').pop().toLowerCase());
+              const isVidS = img && typeof img === 'string'
+                ? ['mp4', 'webm', 'ogg', 'mov', 'avi', 'm4v'].includes(img.split('?')[0].split('.').pop().toLowerCase())
+                : false;
               return `
                 <div class="carousel-slide">
                   ${isVidS ? `
@@ -352,12 +351,7 @@
                   <span class="spec-table-label">City</span>
                   <span class="spec-table-value">${item.city || ''}</span>
                 </div>
-                ${pBHK > 0 ? `
-                <div class="spec-table-row">
-                  <span class="spec-table-label">Bedrooms</span>
-                  <span class="spec-table-value">${pBHK} Bedrooms</span>
-                </div>
-                ` : ''}
+
                 <div class="spec-table-row">
                   <span class="spec-table-label">Area</span>
                   <span class="spec-table-value">${pArea.toLocaleString('en-IN')} Sq Yard</span>

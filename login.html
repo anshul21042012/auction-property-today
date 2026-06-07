@@ -155,7 +155,7 @@
 
         if (!authRes.error) {
           // Client login success with real Supabase Auth session
-          localStorage.setItem('clientSession', JSON.stringify({ email, authenticated: true }));
+          localStorage.setItem('clientSession', JSON.stringify({ email, authenticated: true, property_id: clientData[0].property_id }));
           localStorage.removeItem('isAdmin');
           
           errorBanner.style.display = 'none';
@@ -167,7 +167,7 @@
           }, 500);
         } else {
           // Fallback: log in client-side even if Supabase Auth sign-up is disabled
-          localStorage.setItem('clientSession', JSON.stringify({ email, authenticated: true }));
+          localStorage.setItem('clientSession', JSON.stringify({ email, authenticated: true, property_id: clientData[0].property_id }));
           localStorage.removeItem('isAdmin');
           
           errorBanner.style.display = 'none';

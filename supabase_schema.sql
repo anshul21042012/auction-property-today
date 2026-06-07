@@ -146,8 +146,12 @@ CREATE TABLE IF NOT EXISTS public.authorized_users (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     email text UNIQUE NOT NULL,
     password text NOT NULL,
+    property_id uuid REFERENCES public.properties(id) ON DELETE SET NULL,
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now())
 );
+
+-- In case table already exists, run migration:
+ALTER TABLE public.authorized_users ADD COLUMN IF NOT EXISTS property_id uuid REFERENCES public.properties(id) ON DELETE SET NULL;
 
 -- Enable RLS
 ALTER TABLE public.authorized_users ENABLE ROW LEVEL SECURITY;

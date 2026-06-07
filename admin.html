@@ -344,6 +344,12 @@
                 <label for="client-password">Password</label>
                 <input type="text" id="client-password" class="form-input" placeholder="Enter secure password" required style="border-radius:4px;" />
               </div>
+              <div class="form-group" style="margin-top: 1.25rem; text-align: left;">
+                <label for="client-property">Permitted Property (Pass Access)</label>
+                <select id="client-property" class="form-input" style="border-radius:4px; background: var(--bg-input);">
+                  <option value="">All Properties</option>
+                </select>
+              </div>
               <button type="submit" class="btn-luxury" style="width: 100%; border-radius: 4px; margin-top: 2rem; padding: 0.75rem 1.5rem;">Create & Authorize Client</button>
             </form>
           </div>
@@ -365,6 +371,7 @@
                   <tr>
                     <th>Client Email</th>
                     <th>Password</th>
+                    <th>Allowed Property</th>
                     <th>Created On</th>
                     <th style="text-align: right;">Revoke</th>
                   </tr>
@@ -760,6 +767,9 @@
         loadInquiriesTracker();
       } else if (tabName === 'clients') {
         loadAuthorizedClients();
+        if (window.loadPropertiesForClientDropdown) {
+          window.loadPropertiesForClientDropdown();
+        }
       }
     }
 
@@ -806,7 +816,9 @@
       grid.innerHTML = '';
 
       images.forEach(img => {
-        const isVid = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'm4v'].includes(img.image_url.split('?')[0].split('.').pop().toLowerCase());
+        const isVid = img.image_url && typeof img.image_url === 'string'
+          ? ['mp4', 'webm', 'ogg', 'mov', 'avi', 'm4v'].includes(img.image_url.split('?')[0].split('.').pop().toLowerCase())
+          : false;
         const item = document.createElement('div');
         item.style.cssText = `
           position: relative; 
@@ -936,6 +948,7 @@
         };
         await client.from('property_images').insert([imageRecord]);
         index++;
+      }
     }
 
     // ----------------------------------------------------
@@ -1151,7 +1164,9 @@
         const pBHK = item.bedrooms || item.bhk_configuration || 1;
 
         const row = document.createElement('tr');
-        const isVid0 = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'm4v'].includes(images[0].split('?')[0].split('.').pop().toLowerCase());
+        const isVid0 = images[0] && typeof images[0] === 'string'
+          ? ['mp4', 'webm', 'ogg', 'mov', 'avi', 'm4v'].includes(images[0].split('?')[0].split('.').pop().toLowerCase())
+          : false;
         row.innerHTML = `
           <td>
             <div class="table-property-cell">
@@ -1998,7 +2013,9 @@
 
             const card = document.createElement('div');
             card.className = 'dash-property-card';
-            const isVidD = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'm4v'].includes(images[0].split('?')[0].split('.').pop().toLowerCase());
+            const isVidD = images[0] && typeof images[0] === 'string'
+              ? ['mp4', 'webm', 'ogg', 'mov', 'avi', 'm4v'].includes(images[0].split('?')[0].split('.').pop().toLowerCase())
+              : false;
             card.innerHTML = `
               ${isVidD ? `
                 <video src="${images[0]}" class="dash-property-thumb" style="object-fit:cover; background:#000;" muted playsinline></video>
@@ -2028,25 +2045,37 @@
 
       tableBody.innerHTML = `
         <tr>
-          <td colspan="4" style="text-align:center; padding:2rem 0;">
+          <td colspan="5" style="text-align:center; padding:2rem 0;">
             <div class="skeleton" style="width:20px; height:20px; border-radius:50%; display:inline-block;"></div>
             <p style="color:var(--text-muted); font-size:0.8rem; margin-top:0.5rem;">Loading clients...</p>
           </td>
         </tr>
       `;
 
-      const { data, error } = await window.supabaseClient
-        .from('authorized_users')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // Fetch clients and properties separately to bypass postgrest schema relationship cache issues
+      const [clientsRes, propertiesRes] = await Promise.all([
+        window.supabaseClient
+          .from('authorized_users')
+          .select('*')
+          .order('created_at', { ascending: false }),
+        window.supabaseClient
+          .from('properties')
+          .select('id, title')
+      ]);
 
-      if (error) {
-        showToast(`Failed to load clients: ${error.message}`, 'error');
-        tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--status-cancelled); padding:1rem 0;">Error loading clients</td></tr>`;
+      if (clientsRes.error) {
+        showToast(`Failed to load clients: ${clientsRes.error.message}`, 'error');
+        tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--status-cancelled); padding:1rem 0;">Error loading clients</td></tr>`;
         return;
       }
 
-      const clients = data || [];
+      const clients = clientsRes.data || [];
+      const propertiesList = propertiesRes.data || [];
+      const propertiesMap = {};
+      propertiesList.forEach(p => {
+        propertiesMap[p.id] = p.title;
+      });
+
       if (countBadge) countBadge.textContent = clients.length;
 
       const dashCountBadge = document.getElementById('dash-total-clients');
@@ -2055,7 +2084,7 @@
       if (clients.length === 0) {
         tableBody.innerHTML = `
           <tr>
-            <td colspan="4" style="text-align:center; padding:3rem 0; color:var(--text-muted); font-size:0.85rem;">
+            <td colspan="5" style="text-align:center; padding:3rem 0; color:var(--text-muted); font-size:0.85rem;">
               No authorized clients found.
             </td>
           </tr>
@@ -2071,10 +2100,15 @@
           year: 'numeric'
         });
 
+        const allowedProperty = client.property_id && propertiesMap[client.property_id]
+          ? propertiesMap[client.property_id]
+          : (client.property_id ? "Restricted Property" : "All Properties");
+
         const row = document.createElement('tr');
         row.innerHTML = `
           <td style="font-weight:600; color:var(--text-primary); font-size:0.85rem;">${escapeHTML(client.email)}</td>
           <td style="font-family:monospace; color:var(--text-secondary); font-size:0.85rem;">${escapeHTML(client.password)}</td>
+          <td style="color:var(--text-secondary); font-size:0.85rem; font-weight:500;">${escapeHTML(allowedProperty)}</td>
           <td style="font-size:0.8rem; color:var(--text-muted);">${dateFormatted}</td>
           <td style="text-align: right;">
             <button class="btn-table-action delete" onclick="deleteAuthorizedClient('${client.id}')" title="Revoke Access" style="padding: 0.35rem 0.5rem; font-size: 0.9rem; line-height: 1; border-radius: 4px; background: rgba(226, 76, 76, 0.1); border: 1px solid rgba(226, 76, 76, 0.2); color: var(--status-cancelled); cursor: pointer; transition: all 0.2s;">
@@ -2086,16 +2120,43 @@
       });
     }
 
+    async function loadPropertiesForClientDropdown() {
+      const selectEl = document.getElementById('client-property');
+      if (!selectEl || !window.supabaseClient) return;
+
+      const { data, error } = await window.supabaseClient
+        .from('properties')
+        .select('id, title')
+        .order('title', { ascending: true });
+
+      if (error) {
+        console.error("Error loading properties for client dropdown:", error);
+        return;
+      }
+
+      selectEl.innerHTML = '<option value="">All Properties</option>';
+      if (data) {
+        data.forEach(item => {
+          const option = document.createElement('option');
+          option.value = item.id;
+          option.textContent = item.title;
+          selectEl.appendChild(option);
+        });
+      }
+    }
+
     async function createAuthorizedClient(event) {
       event.preventDefault();
       if (!window.supabaseClient) return;
 
       const emailInput = document.getElementById('client-email');
       const passInput = document.getElementById('client-password');
+      const propertySelect = document.getElementById('client-property');
       const formBtn = event.target.querySelector('button[type="submit"]');
 
       const email = emailInput.value.trim();
       const password = passInput.value.trim();
+      const propertyId = propertySelect ? propertySelect.value : null;
 
       if (!email || !password) {
         showToast("Please fill all fields.", "error");
@@ -2108,7 +2169,7 @@
 
       const { data, error } = await window.supabaseClient
         .from('authorized_users')
-        .insert([{ email, password }])
+        .insert([{ email, password, property_id: propertyId || null }])
         .select();
 
       formBtn.disabled = false;
@@ -2120,6 +2181,7 @@
         showToast("Client account created and authorized successfully.");
         emailInput.value = '';
         passInput.value = '';
+        if (propertySelect) propertySelect.value = '';
         loadAuthorizedClients();
         loadDashboardOverview();
       }
@@ -2144,8 +2206,6 @@
       }
     }
 
-
-
     // Explicitly bind handlers to the window object to guarantee global accessibility for inline onclick bindings
     window.editPropertyRoster = editPropertyRoster;
     window.confirmDeleteProperty = confirmDeleteProperty;
@@ -2164,13 +2224,16 @@
     window.deleteInquiryLog = deleteInquiryLog;
     window.handleMultipleDocumentsSelect = handleMultipleDocumentsSelect;
     window.deleteExistingDocument = deleteExistingDocument;
+    window.loadPropertiesForClientDropdown = loadPropertiesForClientDropdown;
 
     // Initial triggers on load
     window.addEventListener('load', () => {
       loadDashboardOverview();
       loadPropertiesRoster();
       loadInquiriesTracker();
+      loadPropertiesForClientDropdown();
     });
+
   </script>
 </body>
 </html>

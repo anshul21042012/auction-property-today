@@ -16,9 +16,12 @@
 
     const isAdmin = localStorage.getItem('isAdmin') === 'true';
     const hasAuthToken = localStorage.getItem('sb-xqhrjhvbustdwmrmikya-auth-token') !== null;
-    const isClient = JSON.parse(localStorage.getItem('clientSession') || '{}').authenticated === true;
+    const clientSession = JSON.parse(localStorage.getItem('clientSession') || '{}');
+    const isClient = clientSession.authenticated === true;
     if (!isAdmin && !hasAuthToken && !isClient) {
       window.location.replace("login.html");
+    } else if (isClient && !isAdmin && !hasAuthToken && clientSession.property_id) {
+      window.location.replace(`details.html?id=${clientSession.property_id}`);
     }
   </script>
 
@@ -254,7 +257,9 @@
 
         const card = document.createElement('div');
         card.className = 'property-card';
-        const isVidL = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'm4v'].includes(images[0].split('?')[0].split('.').pop().toLowerCase());
+        const isVidL = images[0] && typeof images[0] === 'string'
+          ? ['mp4', 'webm', 'ogg', 'mov', 'avi', 'm4v'].includes(images[0].split('?')[0].split('.').pop().toLowerCase())
+          : false;
         card.innerHTML = `
           <div class="card-media">
             ${isVidL ? `
