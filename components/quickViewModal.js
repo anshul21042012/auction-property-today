@@ -142,7 +142,7 @@
             <div class="modal-stats">
               <div class="modal-stat-box">
                 <h4>Area</h4>
-                <p>${pArea.toLocaleString('en-IN')} sq ft</p>
+                <p>${pArea.toLocaleString('en-IN')} Sq Yard</p>
               </div>
               <div class="modal-stat-box">
                 <h4>Bedrooms</h4>

@@ -558,20 +558,8 @@
 
           <div class="form-grid-2">
             <div class="form-group">
-              <label for="form-area">Area (sq ft)</label>
-              <input type="number" id="form-area" class="form-input" placeholder="e.g. 8500" required />
-            </div>
-            
-            <div class="form-group">
-              <label for="form-bedrooms">Bedrooms</label>
-              <input type="number" id="form-bedrooms" class="form-input" placeholder="e.g. 5" min="1" required />
-            </div>
-          </div>
-
-          <div class="form-grid-2">
-            <div class="form-group">
-              <label for="form-bathrooms">Bathrooms</label>
-              <input type="number" id="form-bathrooms" class="form-input" placeholder="e.g. 6" min="1" required />
+              <label for="form-area">Area (Sq Yard)</label>
+              <input type="number" id="form-area" class="form-input" placeholder="e.g. 1000" required />
             </div>
             
             <div class="form-group">
@@ -1089,8 +1077,8 @@
       const city = document.getElementById('form-city').value.trim();
       const state = document.getElementById('form-state').value.trim();
       const area = parseInt(document.getElementById('form-area').value);
-      const bedrooms = parseInt(document.getElementById('form-bedrooms').value);
-      const bathrooms = parseInt(document.getElementById('form-bathrooms').value);
+      const bedrooms = 0;
+      const bathrooms = 0;
       const auctionDate = new Date(document.getElementById('form-auction-date').value).toISOString();
       const featured = document.getElementById('form-featured').checked;
 
@@ -1257,8 +1245,6 @@
       document.getElementById('form-city').value = item.city || '';
       document.getElementById('form-state').value = item.state || '';
       document.getElementById('form-area').value = item.area_sqft || 0;
-      document.getElementById('form-bedrooms').value = item.bedrooms || 1;
-      document.getElementById('form-bathrooms').value = item.bathrooms || 1;
       
       // format date to fit datetime-local inputs
       if (item.auction_date) {
