@@ -234,8 +234,21 @@
         const pName = item.title || item.property_name || 'Untitled';
         const pClass = item.property_type || item.property_classification || item.type || 'Villa';
         const pArea = item.area_sqft || item.built_area || item.area || 0;
-        const pBHK = item.bedrooms || item.bhk_configuration || 1;
-        const pBaths = item.bathrooms || item.bathroom_configuration || 1;
+        const pBHK = item.bedrooms !== undefined && item.bedrooms !== null ? item.bedrooms : (item.bhk_configuration || 0);
+        const pBaths = item.bathrooms !== undefined && item.bathrooms !== null ? item.bathrooms : (item.bathroom_configuration || 0);
+
+        const bhkSpec = pBHK > 0 ? `
+              <div class="spec-item">
+                <span>🛏️</span>
+                <span>${pBHK} BHK</span>
+              </div>
+        ` : '';
+        const bathsSpec = pBaths > 0 ? `
+              <div class="spec-item">
+                <span>🛁</span>
+                <span>${pBaths} Baths</span>
+              </div>
+        ` : '';
 
         const card = document.createElement('div');
         card.className = 'property-card';
@@ -268,14 +281,8 @@
                 <span>📐</span>
                 <span>${pArea.toLocaleString('en-IN')} Sq Yard</span>
               </div>
-              <div class="spec-item">
-                <span>🛏️</span>
-                <span>${pBHK} BHK</span>
-              </div>
-              <div class="spec-item">
-                <span>🛁</span>
-                <span>${pBaths} Baths</span>
-              </div>
+              ${bhkSpec}
+              ${bathsSpec}
             </div>
             
             <div class="card-pricing">

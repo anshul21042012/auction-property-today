@@ -219,9 +219,22 @@
       const pName = item.title || item.property_name || 'Untitled';
       const pClass = item.property_type || item.property_classification || item.type || 'Villa';
       const pArea = item.area_sqft || item.built_area || item.area || 0;
-      const pBHK = item.bedrooms || item.bhk_configuration || 1;
-      const pBaths = item.bathrooms || item.bathroom_configuration || 1;
+      const pBHK = item.bedrooms !== undefined && item.bedrooms !== null ? item.bedrooms : (item.bhk_configuration || 0);
+      const pBaths = item.bathrooms !== undefined && item.bathrooms !== null ? item.bathrooms : (item.bathroom_configuration || 0);
       const pLoc = item.location || `${item.city}, ${item.state}`;
+
+      const bedroomsHtml = pBHK > 0 ? `
+            <div class="details-spec-box" style="border-left:1px solid var(--border-color); padding-left:2.5rem;">
+              <span class="spec-lbl">Bedrooms</span>
+              <span class="spec-val">${pBHK} BHK</span>
+            </div>
+      ` : '';
+      const bathroomsHtml = pBaths > 0 ? `
+            <div class="details-spec-box" style="border-left:1px solid var(--border-color); padding-left:2.5rem;">
+              <span class="spec-lbl">Bathrooms</span>
+              <span class="spec-val">${pBaths} Baths</span>
+            </div>
+      ` : '';
 
       // Render the entire layout
       container.innerHTML = `
@@ -248,14 +261,8 @@
               <span class="spec-lbl">Area</span>
               <span class="spec-val">${pArea.toLocaleString('en-IN')} Sq Yard</span>
             </div>
-            <div class="details-spec-box" style="border-left:1px solid var(--border-color); padding-left:2.5rem;">
-              <span class="spec-lbl">Bedrooms</span>
-              <span class="spec-val">${pBHK} BHK</span>
-            </div>
-            <div class="details-spec-box" style="border-left:1px solid var(--border-color); padding-left:2.5rem;">
-              <span class="spec-lbl">Bathrooms</span>
-              <span class="spec-val">${pBaths} Baths</span>
-            </div>
+            ${bedroomsHtml}
+            ${bathroomsHtml}
           </div>
         </div>
 
@@ -315,13 +322,15 @@
                   <span class="spec-table-label">City</span>
                   <span class="spec-table-value">${item.city || ''}</span>
                 </div>
+                ${pBHK > 0 ? `
                 <div class="spec-table-row">
                   <span class="spec-table-label">Bedrooms</span>
                   <span class="spec-table-value">${pBHK} Bedrooms</span>
                 </div>
+                ` : ''}
                 <div class="spec-table-row">
-                  <span class="spec-table-label">Area (sq ft)</span>
-                  <span class="spec-table-value">${pArea.toLocaleString('en-IN')} sq ft</span>
+                  <span class="spec-table-label">Area</span>
+                  <span class="spec-table-value">${pArea.toLocaleString('en-IN')} Sq Yard</span>
                 </div>
               </div>
             </div>
@@ -355,20 +364,12 @@
                       <td style="font-weight:600; color:var(--text-primary); font-family:var(--font-serif); font-size:1.1rem;">${priceFormatted}</td>
                     </tr>
                     <tr>
-                      <td>Deposit (EMD 10%)</td>
-                      <td style="font-weight:600; color:var(--text-primary); font-family:var(--font-serif); font-size:1.1rem;">${emdPriceFormatted}</td>
-                    </tr>
-                    <tr>
-                      <td>Minimum Bid Increase</td>
-                      <td>₹5,00,000 Minimum</td>
-                    </tr>
-                    <tr>
                       <td>Title Status</td>
                       <td><span class="status-pill accepted">Vetted & Cleared</span></td>
                     </tr>
                     <tr>
                       <td>Auction Date</td>
-                      <td>${new Date(auctionDate).toLocaleDateString('en-IN', {day:'numeric', month:'long', year:'numeric'})} at 11:00 AM</td>
+                      <td>${new Date(auctionDate).toLocaleDateString('en-IN', {day:'numeric', month:'long', year:'numeric'})}</td>
                     </tr>
                   </tbody>
                 </table>

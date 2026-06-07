@@ -109,8 +109,21 @@
         const pClass = item.property_type || item.property_classification || item.type || 'Villa';
         const pDesc = item.description || item.property_description || '';
         const pArea = item.area_sqft || item.built_area || item.area || 0;
-        const pBHK = item.bedrooms || item.bhk_configuration || 1;
-        const pBaths = item.bathrooms || item.bathroom_configuration || 1;
+        const pBHK = item.bedrooms !== undefined && item.bedrooms !== null ? item.bedrooms : (item.bhk_configuration || 0);
+        const pBaths = item.bathrooms !== undefined && item.bathrooms !== null ? item.bathrooms : (item.bathroom_configuration || 0);
+
+        const bhkBox = pBHK > 0 ? `
+              <div class="modal-stat-box">
+                <h4>Bedrooms</h4>
+                <p>${pBHK} BHK</p>
+              </div>
+        ` : '';
+        const bathsBox = pBaths > 0 ? `
+              <div class="modal-stat-box">
+                <h4>Bathrooms</h4>
+                <p>${pBaths} Bathrooms</p>
+              </div>
+        ` : '';
 
         // 4. Render gorgeous high-luxury content
         const firstIsVid = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'm4v'].includes(images[0].split('?')[0].split('.').pop().toLowerCase());
@@ -144,14 +157,8 @@
                 <h4>Area</h4>
                 <p>${pArea.toLocaleString('en-IN')} Sq Yard</p>
               </div>
-              <div class="modal-stat-box">
-                <h4>Bedrooms</h4>
-                <p>${pBHK} BHK</p>
-              </div>
-              <div class="modal-stat-box">
-                <h4>Bathrooms</h4>
-                <p>${pBaths} Bathrooms</p>
-              </div>
+              ${bhkBox}
+              ${bathsBox}
             </div>
             
             <div style="display:grid; grid-template-columns: 1fr; margin-top:auto;">
